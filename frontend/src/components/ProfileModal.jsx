@@ -56,13 +56,13 @@ const ProfileModal = ({ isOpen, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in">
-            <div className="bg-slate-800 border border-slate-700/50 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up">
-                <div className="flex justify-between items-center p-6 border-b border-slate-700/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+            <div className="bg-slate-800 border border-slate-700/50 rounded-2xl w-full max-w-md my-auto shadow-2xl overflow-hidden animate-fade-in-up max-h-[90vh] flex flex-col">
+                <div className="flex justify-between items-center p-6 border-b border-slate-700/50 shrink-0">
                     <h2 className="text-xl font-display font-bold text-white">Profile Settings</h2>
                     <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700">&times;</button>
                 </div>
-                <div className="p-6">
+                <div className="p-6 overflow-y-auto">
                     {message && (
                         <div className={`p-3 rounded-xl text-sm font-semibold mb-5 ${isError ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
                             {message}

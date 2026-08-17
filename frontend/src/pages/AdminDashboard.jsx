@@ -326,52 +326,52 @@ const AdminDashboard = () => {
                 )}
             </div>
 
-            <div className="flex bg-slate-900/50 p-1 rounded-xl w-fit mb-8 border border-slate-700/50 flex-wrap">
+            <div className="flex bg-slate-900/60 p-1.5 rounded-2xl w-full mb-8 border border-slate-700/50 overflow-x-auto whitespace-nowrap gap-1 custom-scrollbar">
                 <button 
                     onClick={() => { setActiveTab('overview'); setSelectedTicket(null); }} 
-                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'overview' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'} flex items-center gap-2`}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${activeTab === 'overview' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'} flex items-center gap-2`}
                 >
                     <FiPieChart /> Overview
                 </button>
                 <button 
                     onClick={() => { setActiveTab('active'); setSelectedTicket(null); }} 
-                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'active' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${activeTab === 'active' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'}`}
                 >
                     Active Tickets
                 </button>
                 <button 
                     onClick={() => { setActiveTab('history'); setSelectedTicket(null); }} 
-                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${activeTab === 'history' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'}`}
                 >
                     History
                 </button>
                 <button 
                     onClick={() => { setActiveTab('approvals'); setSelectedTicket(null); }} 
-                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'approvals' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'} flex items-center gap-2`}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${activeTab === 'approvals' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'} flex items-center gap-2`}
                 >
-                    Approvals {allUsers.filter(u => u.account_status === 'pending_approval' && u.role === 'customer').length > 0 && <span className="bg-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{allUsers.filter(u => u.account_status === 'pending_approval' && u.role === 'customer').length}</span>}
+                    Approvals {allUsers.filter(u => u.account_status === 'pending_approval' && u.role === 'customer').length > 0 && <span className="bg-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">{allUsers.filter(u => u.account_status === 'pending_approval' && u.role === 'customer').length}</span>}
                 </button>
                 <button 
                     onClick={() => { setActiveTab('engineers'); setSelectedTicket(null); }} 
-                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'engineers' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${activeTab === 'engineers' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'}`}
                 >
                     Engineers
                 </button>
                 <button 
                     onClick={() => { setActiveTab('salesmen'); setSelectedTicket(null); }} 
-                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'salesmen' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${activeTab === 'salesmen' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'}`}
                 >
                     Sales Executives
                 </button>
                 <button 
                     onClick={() => { setActiveTab('customers'); setSelectedTicket(null); }} 
-                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'customers' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${activeTab === 'customers' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'}`}
                 >
                     Customers
                 </button>
                 <button 
                     onClick={() => { setActiveTab('settings'); setSelectedTicket(null); }} 
-                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'settings' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0 ${activeTab === 'settings' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'}`}
                 >
                     Settings
                 </button>
