@@ -163,8 +163,8 @@ router.get('/stats', async (req, res) => {
 
         res.json({ ticketStats, userStats, engineerStats });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server error' });
+        console.error('Stats endpoint error:', error);
+        res.status(500).json({ error: 'Server error', details: error.message });
     }
 });
 
