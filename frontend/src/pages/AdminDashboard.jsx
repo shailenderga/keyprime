@@ -52,18 +52,28 @@ const AdminDashboard = () => {
     };
 
     const fetchData = async () => {
-        const [engineersRes, usersRes] = await Promise.all([
-            axios.get(`${API_URL}/api/auth/engineers`),
-            axios.get(`${API_URL}/api/auth/users`)
-        ]);
-        setEngineers(engineersRes.data);
-        setAllUsers(usersRes.data);
+        try {
+            const usersRes = await axios.get(`${API_URL}/api/auth/users`);
+            setAllUsers(usersRes.data || []);
+        } catch (error) {
+            console.error('Failed to fetch users:', error);
+        }
+        try {
+            const engineersRes = await axios.get(`${API_URL}/api/auth/engineers`);
+            setEngineers(engineersRes.data || []);
+        } catch (error) {
+            console.error('Failed to fetch engineers:', error);
+        }
     };
 
     const fetchTickets = async () => {
-        if(activeTab === 'overview' || activeTab === 'settings') return; // no need to fetch tickets for these tabs
-        const res = await axios.get(`${API_URL}/api/tickets?role=admin&tab=${activeTab}`);
-        setTickets(res.data);
+        if(activeTab === 'overview' || activeTab === 'settings') return;
+        try {
+            const res = await axios.get(`${API_URL}/api/tickets?role=admin&tab=${activeTab}`);
+            setTickets(res.data || []);
+        } catch (error) {
+            console.error('Failed to fetch tickets:', error);
+        }
     };
 
     const fetchStats = async (from = '', to = '') => {
