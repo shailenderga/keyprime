@@ -3,9 +3,20 @@ import poolPromise from '../db.js';
 
 const router = express.Router();
 
+const ensureTable = async (pool) => {
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS settings (
+            setting_key VARCHAR(255) PRIMARY KEY,
+            setting_value TEXT NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    `);
+};
+
 router.get('/', async (req, res) => {
     try {
         const pool = await poolPromise;
+        await ensureTable(pool);
         const [rows] = await pool.query('SELECT setting_key, setting_value FROM settings');
         const settings = {};
         rows.forEach(row => {
@@ -20,6 +31,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const pool = await poolPromise;
+        await ensureTable(pool);
         const { smtp_email, smtp_password, admin_notification_email } = req.body;
         
         const updates = [
