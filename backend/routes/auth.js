@@ -258,7 +258,7 @@ router.post('/google', async (req, res) => {
 router.get('/engineers', async (req, res) => {
     try {
         const pool = await poolPromise;
-        const [engineers] = await pool.query('SELECT id, name, email FROM users WHERE role = "engineer" AND account_status = "active"');
+        const [engineers] = await pool.query('SELECT id, name, email FROM users WHERE role = ? AND account_status = ?', ['engineer', 'active']);
         res.json(engineers);
     } catch (error) {
         console.error('Engineers list error:', error);
