@@ -225,7 +225,7 @@ const AdminDashboard = () => {
             setSettingsMessage('Settings saved successfully!');
             setTimeout(() => setSettingsMessage(''), 3000);
         } catch (error) {
-            setSettingsMessage('Failed to save settings.');
+            setSettingsMessage(error.response?.data?.details || error.response?.data?.error || 'Failed to save settings.');
             setTimeout(() => setSettingsMessage(''), 3000);
         }
     };

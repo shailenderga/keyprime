@@ -86,6 +86,14 @@ const pool = mysql.createPool({
             )
         `);
 
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS settings (
+                setting_key VARCHAR(255) PRIMARY KEY,
+                setting_value TEXT NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        `);
+
         const [rows] = await pool.query('SELECT * FROM users WHERE role = ?', ['admin']);
         if (rows.length === 0) {
             const hashedPassword = await bcrypt.hash('admin123', 10);
