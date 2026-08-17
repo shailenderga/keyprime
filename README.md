@@ -123,12 +123,12 @@ npm run dev
 
 | Environment Variable | Value |
 |----------------------|-------|
-| `DB_HOST` | `mysql-e38187b-keyprime-e0a5.k.aivencloud.com` |
-| `DB_USER` | `avnadmin` |
+| `DB_HOST` | `` |
+| `DB_USER` | `` |
 | `DB_PASSWORD` | *Your Aiven Database Password* |
-| `DB_NAME` | `defaultdb` |
-| `DB_PORT` | `20690` |
-| `JWT_SECRET` | `supersecretjwtkey` |
+| `DB_NAME` | `` |
+| `DB_PORT` | `` |
+| `JWT_SECRET` | `` |
 
 6. Click **Deploy**.
 7. Once deployed, copy your active Backend URL (e.g., `https://helpdesk-pi-eight.vercel.app`).
@@ -138,7 +138,7 @@ npm run dev
 ### Step 3: Deploy Frontend to Vercel
 1. Return to [Vercel Dashboard](https://vercel.com/dashboard).
 2. Click **Add New...** ➔ **Project**.
-3. Import the same GitHub repository (`shailenderga/keyprime`).
+3. Import the same GitHub repository (`Your git username and repo name`).
 4. On the **Configure Project** page:
    - **Root Directory**: Click *Edit* ➔ Select the `frontend` folder.
    - **Framework Preset**: `Vite` (Default).
