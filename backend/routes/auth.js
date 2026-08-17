@@ -261,7 +261,8 @@ router.get('/engineers', async (req, res) => {
         const [engineers] = await pool.query('SELECT id, name, email FROM users WHERE role = "engineer" AND account_status = "active"');
         res.json(engineers);
     } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+        console.error('Engineers list error:', error);
+        res.status(500).json({ error: 'Server error', details: error.message });
     }
 });
 
