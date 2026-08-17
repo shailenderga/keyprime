@@ -191,8 +191,8 @@ const initDb = async () => {
         console.log("Database initialized successfully");
         return pool;
     } catch (err) {
-        console.error("Database connection failed. Please ensure MySQL is running:", err.message);
-        return null;
+        console.error("Database connection failed:", err.message);
+        throw new Error("Database connection failed: " + err.message);
     }
 };
 
