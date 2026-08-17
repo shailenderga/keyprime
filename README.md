@@ -66,11 +66,11 @@ npm install
 Create a `.env` file inside the `backend/` folder:
 ```env
 PORT=5000
-DB_HOST=mysql-e38187b-keyprime-e0a5.k.aivencloud.com
-DB_USER=avnadmin
-DB_PASSWORD=your_aiven_db_password
-DB_NAME=defaultdb
-DB_PORT=20690
+DB_HOST=
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+DB_PORT=
 JWT_SECRET=supersecretjwtkey
 ```
 
