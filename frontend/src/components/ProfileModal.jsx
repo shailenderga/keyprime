@@ -2,12 +2,14 @@ import { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { API_URL } from '../config';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const ProfileModal = ({ isOpen, onClose }) => {
     const { user } = useContext(AuthContext);
     const [email, setEmail] = useState('');
     const [location, setLocation] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -17,6 +19,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
             setEmail(user.email || '');
             setLocation(user.location || '');
             setPassword('');
+            setShowPassword(false);
             setMessage('');
             setIsError(false);
         }
@@ -55,11 +58,11 @@ const ProfileModal = ({ isOpen, onClose }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in">
             <div className="bg-slate-800 border border-slate-700/50 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up">
-                <div className="flex justify-between items-center p-40 border-b border-slate-700/50">
+                <div className="flex justify-between items-center p-6 border-b border-slate-700/50">
                     <h2 className="text-xl font-display font-bold text-white">Profile Settings</h2>
                     <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700">&times;</button>
                 </div>
-                <div className="p-10">
+                <div className="p-6">
                     {message && (
                         <div className={`p-3 rounded-xl text-sm font-semibold mb-5 ${isError ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
                             {message}
@@ -88,13 +91,22 @@ const ProfileModal = ({ isOpen, onClose }) => {
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">New Password</label>
-                            <input 
-                                type="password" 
-                                value={password} 
-                                onChange={(e) => setPassword(e.target.value)} 
-                                className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-sm"
-                                placeholder="Leave blank to keep current password"
-                            />
+                            <div className="relative">
+                                <input 
+                                    type={showPassword ? 'text' : 'password'} 
+                                    value={password} 
+                                    onChange={(e) => setPassword(e.target.value)} 
+                                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 pl-4 pr-12 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-sm"
+                                    placeholder="Leave blank to keep current password"
+                                />
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowPassword(!showPassword)} 
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors p-1"
+                                >
+                                    {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+                                </button>
+                            </div>
                         </div>
                         <div className="pt-2">
                             <button 

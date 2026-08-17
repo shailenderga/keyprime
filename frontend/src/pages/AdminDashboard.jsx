@@ -33,6 +33,7 @@ const AdminDashboard = () => {
     // Settings state
     const [settingsFormData, setSettingsFormData] = useState({ smtp_email: '', smtp_password: '', admin_notification_email: '' });
     const [settingsMessage, setSettingsMessage] = useState('');
+    const [showSmtpPassword, setShowSmtpPassword] = useState(false);
     // Stats state
     const [stats, setStats] = useState(null);
     // Engineer performance filter
@@ -1057,14 +1058,23 @@ const AdminDashboard = () => {
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Google App Password (16-digits)</label>
-                            <input 
-                                type="password" 
-                                required
-                                value={settingsFormData.smtp_password} 
-                                onChange={e => setSettingsFormData({...settingsFormData, smtp_password: e.target.value})}
-                                placeholder="xxxx xxxx xxxx xxxx"
-                                className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl px-4 py-3 outline-none focus:border-indigo-500 transition-colors"
-                            />
+                            <div className="relative">
+                                <input 
+                                    type={showSmtpPassword ? 'text' : 'password'} 
+                                    required
+                                    value={settingsFormData.smtp_password} 
+                                    onChange={e => setSettingsFormData({...settingsFormData, smtp_password: e.target.value})}
+                                    placeholder="xxxx xxxx xxxx xxxx"
+                                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl pl-4 pr-12 py-3 outline-none focus:border-indigo-500 transition-colors"
+                                />
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowSmtpPassword(!showSmtpPassword)} 
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors p-1"
+                                >
+                                    {showSmtpPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+                                </button>
+                            </div>
                         </div>
                         <div className="pt-4 border-t border-slate-700">
                             <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Admin Notification Email</label>
