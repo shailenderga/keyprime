@@ -56,68 +56,70 @@ const ProfileModal = ({ isOpen, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-            <div className="bg-slate-800 border border-slate-700/50 rounded-2xl w-full max-w-md my-auto shadow-2xl overflow-hidden animate-fade-in-up max-h-[90vh] flex flex-col">
-                <div className="flex justify-between items-center p-6 border-b border-slate-700/50 shrink-0">
-                    <h2 className="text-xl font-display font-bold text-white">Profile Settings</h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700">&times;</button>
-                </div>
-                <div className="p-6 overflow-y-auto">
-                    {message && (
-                        <div className={`p-3 rounded-xl text-sm font-semibold mb-5 ${isError ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
-                            {message}
-                        </div>
-                    )}
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Email Address</label>
-                            <input 
-                                type="email" 
-                                value={email} 
-                                onChange={(e) => setEmail(e.target.value)} 
-                                className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-sm"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Location / City</label>
-                            <input 
-                                type="text" 
-                                value={location} 
-                                onChange={(e) => setLocation(e.target.value)} 
-                                className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-sm"
-                                placeholder="Enter Location"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">New Password</label>
-                            <div className="relative">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/80 backdrop-blur-sm animate-fade-in p-4">
+            <div className="min-h-full flex items-center justify-center">
+                <div className="bg-slate-800 border border-slate-700/50 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up my-8">
+                    <div className="flex justify-between items-center p-6 border-b border-slate-700/50">
+                        <h2 className="text-xl font-display font-bold text-white">Profile Settings</h2>
+                        <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700">&times;</button>
+                    </div>
+                    <div className="p-6">
+                        {message && (
+                            <div className={`p-3 rounded-xl text-sm font-semibold mb-5 ${isError ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+                                {message}
+                            </div>
+                        )}
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Email Address</label>
                                 <input 
-                                    type={showPassword ? 'text' : 'password'} 
-                                    value={password} 
-                                    onChange={(e) => setPassword(e.target.value)} 
-                                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 pl-4 pr-12 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-sm"
-                                    placeholder="Leave blank to keep current password"
+                                    type="email" 
+                                    value={email} 
+                                    onChange={(e) => setEmail(e.target.value)} 
+                                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-sm"
+                                    required
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Location / City</label>
+                                <input 
+                                    type="text" 
+                                    value={location} 
+                                    onChange={(e) => setLocation(e.target.value)} 
+                                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-sm"
+                                    placeholder="Enter Location"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">New Password</label>
+                                <div className="relative">
+                                    <input 
+                                        type={showPassword ? 'text' : 'password'} 
+                                        value={password} 
+                                        onChange={(e) => setPassword(e.target.value)} 
+                                        className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 pl-4 pr-12 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all text-sm"
+                                        placeholder="Leave blank to keep current password"
+                                    />
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setShowPassword(!showPassword)} 
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors p-1"
+                                    >
+                                        {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="pt-2">
                                 <button 
-                                    type="button" 
-                                    onClick={() => setShowPassword(!showPassword)} 
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors p-1"
+                                    type="submit" 
+                                    disabled={isLoading}
+                                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(79,70,229,0.2)] disabled:opacity-50"
                                 >
-                                    {showPassword ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
+                                    {isLoading ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
-                        </div>
-                        <div className="pt-2">
-                            <button 
-                                type="submit" 
-                                disabled={isLoading}
-                                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(79,70,229,0.2)] disabled:opacity-50"
-                            >
-                                {isLoading ? 'Saving...' : 'Save Changes'}
-                            </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
