@@ -115,6 +115,9 @@ const pool = mysql.createPool({
             await pool.query('ALTER TABLE tickets ADD COLUMN engineer_rating INT NULL');
             await pool.query('ALTER TABLE tickets ADD COLUMN engineer_feedback TEXT NULL');
         } catch (e) {}
+        try {
+            await pool.query('ALTER TABLE tickets ADD COLUMN customer_ticket_no INT DEFAULT 1');
+        } catch (e) {}
 
         console.log("Database initialized successfully");
     } catch (err) {
