@@ -126,6 +126,10 @@ const pool = mysql.createPool({
         try {
             await pool.query('ALTER TABLE tickets ADD COLUMN customer_ticket_no INT DEFAULT 1');
         } catch (e) {}
+        try {
+            await pool.query('ALTER TABLE tickets ADD COLUMN raised_by_admin_id INT NULL');
+            await pool.query('ALTER TABLE tickets ADD CONSTRAINT fk_raised_admin FOREIGN KEY (raised_by_admin_id) REFERENCES users(id)');
+        } catch (e) {}
 
         console.log("Database initialized successfully");
     } catch (err) {

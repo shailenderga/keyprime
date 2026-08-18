@@ -176,7 +176,14 @@ const SalesExecutiveDashboard = () => {
                                 <span className="text-sm font-medium text-slate-500">{format(new Date(ticket.created_at), 'MMM dd, yyyy HH:mm')}</span>
                             </div>
                             <h3 className="text-lg font-bold text-slate-200 mb-2">Customer: {ticket.customer_name}</h3>
-                            <p className="text-xs text-slate-400 mb-4 font-semibold">{ticket.customer_phone} | {ticket.store_name} | {ticket.customer_location}</p>
+                            <p className="text-xs text-slate-400 mb-2 font-semibold">{ticket.customer_phone} | {ticket.store_name} | {ticket.customer_location}</p>
+                            {ticket.admin_name ? (
+                                <span className="inline-block text-[10px] font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded mb-3">Raised By: Admin ({ticket.admin_name})</span>
+                            ) : ticket.salesman_name ? (
+                                <span className="inline-block text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded mb-3">Raised By: Sales Exec ({ticket.salesman_name})</span>
+                            ) : (
+                                <span className="inline-block text-[10px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded mb-3">Raised By: Customer (Direct)</span>
+                            )}
                             <p className="text-slate-300 whitespace-pre-wrap text-sm leading-relaxed border-t border-slate-700 pt-4 mt-2"><strong>Issue:</strong> {ticket.description}</p>
                             {ticket.screenshot_url && (
                                 <div className="mt-4 flex flex-wrap gap-3">

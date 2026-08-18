@@ -1,11 +1,11 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { format, isToday, isThisMonth, parseISO, startOfDay, endOfDay } from 'date-fns';
 import ImageModal from '../components/ImageModal';
-import { FiEye, FiEyeOff, FiSearch, FiX } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiSearch, FiX, FiPieChart, FiPlus, FiTrash2, FiCheckCircle, FiUploadCloud } from 'react-icons/fi';
 import { API_URL } from '../config';
-import { FiPieChart } from 'react-icons/fi';
 
 const AdminDashboard = () => {
     const { user } = useContext(AuthContext);
@@ -42,6 +42,21 @@ const AdminDashboard = () => {
     // Engineer ticket view filter
     const [engFilterId, setEngFilterId] = useState(null);
     const [engFilterName, setEngFilterName] = useState('');
+
+    // Admin Raise Ticket Modal State
+    const [showRaiseTicketModal, setShowRaiseTicketModal] = useState(false);
+    const [raiseTicketFormData, setRaiseTicketFormData] = useState({
+        name: '',
+        phone: '',
+        store_name: '',
+        location: '',
+        software_version: '',
+        description: '',
+        assigned_engineer_id: ''
+    });
+    const [raiseTicketScreenshots, setRaiseTicketScreenshots] = useState([]);
+    const [raiseTicketLoading, setRaiseTicketLoading] = useState(false);
+    const [raiseTicketMessage, setRaiseTicketMessage] = useState('');
 
     const fetchSettings = async () => {
         try {
@@ -180,6 +195,76 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleDeleteTicket = async (ticketId, e) => {
+        if (e) e.stopPropagation();
+        if (window.confirm('Are you sure you want to PERMANENTLY DELETE this ticket? This action cannot be undone.')) {
+            try {
+                await axios.delete(`${API_URL}/api/tickets/${ticketId}`);
+                if (selectedTicket && selectedTicket.id === ticketId) {
+                    setSelectedTicket(null);
+                }
+                fetchTickets();
+            } catch (error) {
+                alert('Failed to delete ticket: ' + (error.response?.data?.error || error.message));
+            }
+        }
+    };
+
+    const handleUpdateStatus = async (ticketId, status, message) => {
+        try {
+            await axios.put(`${API_URL}/api/tickets/${ticketId}/status`, {
+                status,
+                message: message || `Status changed to ${status} by Admin`,
+                user_id: user.id
+            });
+            if (selectedTicket && selectedTicket.id === ticketId) {
+                setSelectedTicket(prev => prev ? { ...prev, status } : null);
+            }
+            fetchTickets();
+        } catch (error) {
+            alert('Failed to update ticket status');
+        }
+    };
+
+    const handleAdminRaiseTicket = async (e) => {
+        e.preventDefault();
+        setRaiseTicketLoading(true);
+        setRaiseTicketMessage('');
+
+        const formData = new FormData();
+        formData.append('admin_id', user.id);
+        formData.append('name', raiseTicketFormData.name);
+        formData.append('phone', raiseTicketFormData.phone);
+        formData.append('store_name', raiseTicketFormData.store_name);
+        formData.append('location', raiseTicketFormData.location);
+        formData.append('software_version', raiseTicketFormData.software_version);
+        formData.append('description', raiseTicketFormData.description);
+        if (raiseTicketFormData.assigned_engineer_id) {
+            formData.append('assigned_engineer_id', raiseTicketFormData.assigned_engineer_id);
+        }
+        for (let i = 0; i < raiseTicketScreenshots.length; i++) {
+            formData.append('screenshots', raiseTicketScreenshots[i]);
+        }
+
+        try {
+            await axios.post(`${API_URL}/api/tickets/admin`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setRaiseTicketMessage('Ticket raised successfully by Admin!');
+            setRaiseTicketFormData({ name: '', phone: '', store_name: '', location: '', software_version: '', description: '', assigned_engineer_id: '' });
+            setRaiseTicketScreenshots([]);
+            fetchTickets();
+            setTimeout(() => {
+                setShowRaiseTicketModal(false);
+                setRaiseTicketMessage('');
+            }, 1500);
+        } catch (error) {
+            setRaiseTicketMessage(error.response?.data?.error || 'Failed to raise ticket');
+        } finally {
+            setRaiseTicketLoading(false);
+        }
+    };
+
     const handleArchive = async (id) => {
         if (window.confirm('Remove this ticket from the active dashboard?')) {
             await axios.put(`${API_URL}/api/tickets/${id}/archive`);
@@ -299,14 +384,22 @@ const AdminDashboard = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-4">
                 <div>
                     <h1 className="text-3xl font-display font-bold text-white tracking-tight">Admin Dashboard</h1>
-                    <p className="text-slate-400 mt-1">Manage tickets and assign engineers</p>
+                    <p className="text-slate-400 mt-1">Manage tickets, assign engineers, and raise tickets</p>
                 </div>
-                <button 
-                    onClick={() => setShowUserForm(!showUserForm)} 
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-[0_0_15px_rgba(79,70,229,0.2)] text-sm"
-                >
-                    {showUserForm ? 'Close Form' : '+ Add User'}
-                </button>
+                <div className="flex items-center gap-3">
+                    <button 
+                        onClick={() => setShowRaiseTicketModal(true)} 
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm flex items-center gap-2"
+                    >
+                        <FiPlus size={16} /> Raise Ticket
+                    </button>
+                    <button 
+                        onClick={() => setShowUserForm(!showUserForm)} 
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-[0_0_15px_rgba(79,70,229,0.2)] text-sm"
+                    >
+                        {showUserForm ? 'Close Form' : '+ Add User'}
+                    </button>
+                </div>
             </div>
 
             {/* Global Search Bar */}
@@ -632,6 +725,7 @@ const AdminDashboard = () => {
                                         <th className="px-5 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Date & Time</th>
                                         <th className="px-5 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
                                         <th className="px-5 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Assignment</th>
+                                        <th className="px-5 py-4 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-700/30">
@@ -647,15 +741,20 @@ const AdminDashboard = () => {
                                                 <div className="text-sm font-semibold text-slate-200">{ticket.customer_name}</div>
                                                 <div className="text-xs font-medium text-slate-400">{ticket.customer_phone || 'No phone'}</div>
                                                 <div className="text-xs text-slate-400 mt-0.5 truncate max-w-[150px]">{ticket.store_name}</div>
-                                                {ticket.salesman_name ? (
+                                                {ticket.admin_name ? (
+                                                    <div className="text-[10px] font-bold text-purple-400 mt-1 flex items-center gap-1">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block"></span>
+                                                        Raised By: Admin ({ticket.admin_name})
+                                                    </div>
+                                                ) : ticket.salesman_name ? (
                                                     <div className="text-[10px] font-bold text-amber-400 mt-1 flex items-center gap-1">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span>
-                                                        Via: {ticket.salesman_name}
+                                                        Raised By: Sales Exec ({ticket.salesman_name})
                                                     </div>
                                                 ) : (
                                                     <div className="text-[10px] font-bold text-indigo-400 mt-1 flex items-center gap-1">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 inline-block"></span>
-                                                        Direct
+                                                        Raised By: Customer (Direct)
                                                     </div>
                                                 )}
                                             </td>
@@ -679,11 +778,20 @@ const AdminDashboard = () => {
                                                     ))}
                                                 </select>
                                             </td>
+                                            <td className="px-5 py-4 whitespace-nowrap text-center" onClick={(e) => e.stopPropagation()}>
+                                                <button
+                                                    onClick={(e) => handleDeleteTicket(ticket.id, e)}
+                                                    title="Delete Ticket"
+                                                    className="p-2 text-rose-400 hover:text-rose-200 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-colors"
+                                                >
+                                                    <FiTrash2 size={15} />
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                     {filteredTickets.length === 0 && (
                                         <tr>
-                                            <td colSpan="5" className="px-6 py-12 text-center text-slate-500">
+                                            <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
                                                 <div className="text-center text-slate-500 font-medium py-8">
                                                     {tickets.length > 0 ? 'No tickets match your filters.' : activeTab === 'active' ? 'No active tickets found.' : 'No ticket history.'}
                                                 </div>
@@ -1095,6 +1203,144 @@ const AdminDashboard = () => {
                         </div>
                     </form>
                 </div>
+            )}
+
+            {showRaiseTicketModal && createPortal(
+                <div className="fixed inset-0 z-[9999] overflow-y-auto bg-slate-950/80 backdrop-blur-md animate-fade-in p-4">
+                    <div className="min-h-full flex items-center justify-center">
+                        <div className="bg-slate-900 border border-slate-700/70 rounded-2xl w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-fade-in-up my-8 relative z-[10000]">
+                            <div className="flex justify-between items-center px-6 py-5 border-b border-slate-700/50 bg-slate-800/50">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                                        <FiPlus size={18} />
+                                    </div>
+                                    <h2 className="text-xl font-display font-bold text-white">Raise Ticket (Admin)</h2>
+                                </div>
+                                <button onClick={() => setShowRaiseTicketModal(false)} className="text-slate-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700/60 font-bold">&times;</button>
+                            </div>
+                            
+                            <form onSubmit={handleAdminRaiseTicket} className="p-6 space-y-4">
+                                {raiseTicketMessage && (
+                                    <div className={`p-3.5 rounded-xl text-sm font-semibold ${raiseTicketMessage.includes('successfully') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                                        {raiseTicketMessage}
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Customer Phone</label>
+                                        <input 
+                                            type="text"
+                                            value={raiseTicketFormData.phone}
+                                            onChange={e => setRaiseTicketFormData({...raiseTicketFormData, phone: e.target.value})}
+                                            placeholder="10-digit Phone"
+                                            className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Customer Name</label>
+                                        <input 
+                                            type="text"
+                                            value={raiseTicketFormData.name}
+                                            onChange={e => setRaiseTicketFormData({...raiseTicketFormData, name: e.target.value})}
+                                            placeholder="Full Name"
+                                            className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Store / Business Name</label>
+                                        <input 
+                                            type="text"
+                                            value={raiseTicketFormData.store_name}
+                                            onChange={e => setRaiseTicketFormData({...raiseTicketFormData, store_name: e.target.value})}
+                                            placeholder="e.g. Metro Mart"
+                                            className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Location / City</label>
+                                        <input 
+                                            type="text"
+                                            value={raiseTicketFormData.location}
+                                            onChange={e => setRaiseTicketFormData({...raiseTicketFormData, location: e.target.value})}
+                                            placeholder="e.g. Mumbai"
+                                            className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Software Version</label>
+                                        <input 
+                                            type="text"
+                                            value={raiseTicketFormData.software_version}
+                                            onChange={e => setRaiseTicketFormData({...raiseTicketFormData, software_version: e.target.value})}
+                                            placeholder="e.g. v2.4.1"
+                                            className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Assign Engineer (Optional)</label>
+                                        <select
+                                            value={raiseTicketFormData.assigned_engineer_id}
+                                            onChange={e => setRaiseTicketFormData({...raiseTicketFormData, assigned_engineer_id: e.target.value})}
+                                            className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
+                                        >
+                                            <option value="">Unassigned (Assign later)</option>
+                                            {engineers.map(eng => (
+                                                <option key={eng.id} value={eng.id}>{eng.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Issue Description *</label>
+                                    <textarea 
+                                        required
+                                        value={raiseTicketFormData.description}
+                                        onChange={e => setRaiseTicketFormData({...raiseTicketFormData, description: e.target.value})}
+                                        placeholder="Describe the issue in detail..."
+                                        className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-3 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors h-24 resize-none"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Attach Screenshots (Optional)</label>
+                                    <input 
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        onChange={e => setRaiseTicketScreenshots(e.target.files)}
+                                        className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700 cursor-pointer"
+                                    />
+                                </div>
+
+                                <div className="pt-3 flex gap-3">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setShowRaiseTicketModal(false)}
+                                        className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-sm transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        disabled={raiseTicketLoading}
+                                        className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-50"
+                                    >
+                                        {raiseTicketLoading ? 'Raising Ticket...' : 'Submit Ticket'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>,
+                document.body
             )}
 
             {fullScreenImage && <ImageModal url={fullScreenImage} onClose={() => setFullScreenImage(null)} />}

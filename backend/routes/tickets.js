@@ -117,6 +117,52 @@ router.post('/salesman', (req, res, next) => {
     }
 });
 
+router.post('/admin', (req, res, next) => {
+    upload.array('screenshots', 10)(req, res, (err) => {
+        if (err) return res.status(400).json({ error: 'Upload error: ' + err.message });
+        next();
+    });
+}, async (req, res) => {
+    try {
+        const pool = await poolPromise;
+        const { name, phone, store_name, location, software_version, description, admin_id, assigned_engineer_id } = req.body;
+        const screenshot_urls = (req.files && req.files.length > 0) 
+            ? req.files.map(f => `/uploads/${f.filename}`).join(',') 
+            : null;
+
+        let customer_id;
+        if (phone && phone.trim()) {
+            let [users] = await pool.query('SELECT * FROM users WHERE phone = ?', [phone.trim()]);
+            if (users.length > 0) {
+                customer_id = users[0].id;
+            } else {
+                const dummyEmail = `${phone.trim()}@support.local`;
+                const defaultPassword = '$2b$10$wM0P7L9wZtO1QZ.G0G4a.O6d9N.kK5X2p2eK6rL4l2G5yO1g6R1/O'; 
+                const [result] = await pool.query(
+                    'INSERT INTO users (name, email, password, phone, store_name, location, role, account_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                    [name || 'Customer', dummyEmail, defaultPassword, phone.trim(), store_name || '', location || '', 'customer', 'active']
+                );
+                customer_id = result.insertId;
+            }
+        } else {
+            customer_id = admin_id;
+        }
+
+        const [maxTicket] = await pool.query('SELECT MAX(customer_ticket_no) as max_no FROM tickets WHERE customer_id = ?', [customer_id]);
+        const nextTicketNo = (maxTicket[0].max_no || 0) + 1;
+
+        const [ticketResult] = await pool.query(
+            'INSERT INTO tickets (customer_id, software_version, description, screenshot_url, raised_by_admin_id, assigned_engineer_id, customer_ticket_no) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [customer_id, software_version || null, description, screenshot_urls, admin_id, assigned_engineer_id || null, nextTicketNo]
+        );
+        
+        res.status(201).json({ message: 'Ticket raised successfully by Admin', ticketId: ticketResult.insertId });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message || 'Server error' });
+    }
+});
+
 router.get('/stats', async (req, res) => {
     try {
         const pool = await poolPromise;
@@ -178,11 +224,13 @@ router.get('/', async (req, res) => {
             SELECT t.*, 
                    c.name as customer_name, c.phone as customer_phone, c.store_name as store_name, c.location as customer_location,
                    e.name as engineer_name, e.phone as engineer_phone, e.profile_photo as engineer_photo,
-                   s.name as salesman_name
+                   s.name as salesman_name,
+                   a.name as admin_name
             FROM tickets t
             JOIN users c ON t.customer_id = c.id
             LEFT JOIN users e ON t.assigned_engineer_id = e.id
             LEFT JOIN users s ON t.raised_by_salesman_id = s.id
+            LEFT JOIN users a ON t.raised_by_admin_id = a.id
             WHERE (t.is_archived = ? ${isHistory ? "OR t.status = 'closed'" : "AND t.status != 'closed'"})
         `;
         let params = [isHistory ? true : false];
@@ -299,15 +347,18 @@ router.post('/:id/comments', async (req, res) => {
     }
 });
 
-router.put('/:id/archive', async (req, res) => {
+router.delete('/:id', async (req, res) => {
     try {
         const pool = await poolPromise;
         const { id } = req.params;
-        await pool.query('UPDATE tickets SET is_archived = TRUE WHERE id = ?', [id]);
-        res.json({ message: 'Ticket archived successfully' });
+
+        await pool.query('DELETE FROM ticket_updates WHERE ticket_id = ?', [id]);
+        await pool.query('DELETE FROM tickets WHERE id = ?', [id]);
+
+        res.json({ message: 'Ticket deleted successfully' });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: 'Server error', details: error.message });
     }
 });
 

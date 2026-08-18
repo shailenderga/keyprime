@@ -147,6 +147,11 @@ const CustomerDashboard = () => {
                                 <span className="font-mono text-slate-400 text-sm bg-slate-900/50 px-2 py-1 rounded border border-slate-700/50">#{ticket.customer_ticket_no || ticket.id}</span>
                                 <StatusBadge status={ticket.status} />
                                 <span className="text-sm font-medium text-slate-500">{format(new Date(ticket.created_at), 'MMM dd, yyyy HH:mm')}</span>
+                                {ticket.admin_name ? (
+                                    <span className="text-[10px] font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded">Raised By: Admin ({ticket.admin_name})</span>
+                                ) : ticket.salesman_name ? (
+                                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">Raised By: Sales Exec ({ticket.salesman_name})</span>
+                                ) : null}
                             </div>
                             <p className="text-slate-400 whitespace-pre-wrap text-sm leading-relaxed">{ticket.description}</p>
                             {ticket.screenshot_url && (

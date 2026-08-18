@@ -116,7 +116,14 @@ const EngineerDashboard = () => {
                                 <StatusBadge status={ticket.status} />
                             </div>
                             <h3 className="text-sm font-semibold text-slate-200 truncate mb-2">{ticket.description}</h3>
-                            <div className="text-xs font-medium text-slate-400 flex items-center gap-1.5"><svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> {ticket.customer_name}</div>
+                            <div className="text-xs font-medium text-slate-400 flex items-center gap-1.5 mb-1"><svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> {ticket.customer_name}</div>
+                            {ticket.admin_name ? (
+                                <div className="text-[10px] font-bold text-purple-400">Raised By: Admin ({ticket.admin_name})</div>
+                            ) : ticket.salesman_name ? (
+                                <div className="text-[10px] font-bold text-amber-400">Raised By: Sales Exec ({ticket.salesman_name})</div>
+                            ) : (
+                                <div className="text-[10px] font-bold text-indigo-400">Raised By: Customer (Direct)</div>
+                            )}
                         </div>
                     ))}
                     {tickets.length === 0 && <div className="text-center text-slate-500 font-medium py-12 bg-slate-800/20 border border-slate-700/30 rounded-2xl">{activeTab === 'active' ? 'No active tickets assigned to you.' : 'No ticket history.'}</div>}
@@ -133,9 +140,21 @@ const EngineerDashboard = () => {
                             </div>
                             
                             <div className="grid grid-cols-2 gap-4 mb-8 relative z-10">
-                                <div className="col-span-2 bg-slate-900/50 border border-slate-700/50 p-4 rounded-xl">
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Customer</p>
-                                    <p className="font-semibold text-slate-200 text-sm">{selectedTicket.customer_name}</p>
+                                <div className="col-span-2 bg-slate-900/50 border border-slate-700/50 p-4 rounded-xl flex justify-between items-center">
+                                    <div>
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Customer</p>
+                                        <p className="font-semibold text-slate-200 text-sm">{selectedTicket.customer_name}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Raised By</p>
+                                        {selectedTicket.admin_name ? (
+                                            <p className="text-xs font-bold text-purple-400">Admin ({selectedTicket.admin_name})</p>
+                                        ) : selectedTicket.salesman_name ? (
+                                            <p className="text-xs font-bold text-amber-400">Sales Exec ({selectedTicket.salesman_name})</p>
+                                        ) : (
+                                            <p className="text-xs font-bold text-indigo-400">Customer (Direct)</p>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="bg-slate-900/50 border border-slate-700/50 p-4 rounded-xl">
                                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Phone</p>
