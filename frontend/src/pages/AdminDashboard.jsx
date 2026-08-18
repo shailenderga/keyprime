@@ -584,52 +584,62 @@ const AdminDashboard = () => {
                     </div>
 
                     {stats?.engineerStats && stats.engineerStats.length > 0 && (
-                        <div className="bg-slate-800/80 p-6 rounded-2xl border border-slate-700/50 shadow-lg mt-8">
-                            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                                <h2 className="text-lg font-display font-bold text-white">Engineer Performance</h2>
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-slate-400 font-semibold whitespace-nowrap">From</span>
+                        <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-xl mt-8">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-700/50">
+                                <div>
+                                    <h2 className="text-xl font-display font-bold text-white">Engineer Performance</h2>
+                                    <p className="text-xs text-slate-400 mt-1 font-medium">
+                                        {!engFrom && !engTo ? 'Showing stats for Last 30 Days (default)' : `Filtered Range: ${engFrom || 'Start'} to ${engTo || 'Today'}`}
+                                    </p>
+                                </div>
+                                
+                                <div className="flex flex-wrap items-center gap-3 bg-slate-900/60 p-2 rounded-xl border border-slate-700/50">
+                                    <div className="flex items-center gap-2 px-1">
+                                        <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">From</span>
                                         <input
-                                            type="date" value={engFrom}
+                                            type="date"
+                                            value={engFrom}
                                             onChange={e => { setEngFrom(e.target.value); fetchStats(e.target.value, engTo); }}
-                                            className="bg-slate-900/60 border border-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl outline-none focus:border-indigo-500 transition-colors"
+                                            className="bg-slate-800 border border-slate-700 text-slate-200 text-xs px-3 py-2 rounded-lg outline-none focus:border-indigo-500 transition-colors min-w-[135px] [color-scheme:dark]"
                                         />
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-slate-400 font-semibold whitespace-nowrap">To</span>
+                                    
+                                    <div className="flex items-center gap-2 px-1">
+                                        <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">To</span>
                                         <input
-                                            type="date" value={engTo}
+                                            type="date"
+                                            value={engTo}
                                             onChange={e => { setEngTo(e.target.value); fetchStats(engFrom, e.target.value); }}
-                                            className="bg-slate-900/60 border border-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl outline-none focus:border-indigo-500 transition-colors"
+                                            className="bg-slate-800 border border-slate-700 text-slate-200 text-xs px-3 py-2 rounded-lg outline-none focus:border-indigo-500 transition-colors min-w-[135px] [color-scheme:dark]"
                                         />
                                     </div>
+                                    
                                     {(engFrom || engTo) && (
-                                        <button onClick={() => { setEngFrom(''); setEngTo(''); fetchStats('', ''); }}
-                                            className="text-xs font-bold text-rose-400 hover:text-rose-300 px-3 py-2 border border-rose-500/20 rounded-xl bg-rose-500/5 hover:bg-rose-500/10 transition-colors">
-                                            Clear
+                                        <button
+                                            onClick={() => { setEngFrom(''); setEngTo(''); fetchStats('', ''); }}
+                                            className="text-xs font-bold text-rose-400 hover:text-rose-300 px-3 py-1.5 border border-rose-500/30 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 transition-colors ml-auto sm:ml-0"
+                                        >
+                                            Clear Filter
                                         </button>
-                                    )}
-                                    {!engFrom && !engTo && (
-                                        <span className="text-xs text-slate-500 italic">Last 30 Days (default)</span>
                                     )}
                                 </div>
                             </div>
-                            <div className="overflow-x-auto">
+
+                            <div className="overflow-x-auto rounded-xl border border-slate-700/40">
                                 <table className="min-w-full divide-y divide-slate-700/50">
-                                    <thead className="bg-slate-900/40">
+                                    <thead className="bg-slate-900/60">
                                         <tr>
-                                            <th className="px-5 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Engineer Name</th>
-                                            <th className="px-5 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Tickets Solved / Closed</th>
+                                            <th className="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Engineer Name</th>
+                                            <th className="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Tickets Solved / Closed</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-700/30">
+                                    <tbody className="divide-y divide-slate-700/30 bg-slate-900/20">
                                         {stats.engineerStats.map((eng) => (
                                             <tr key={eng.id} className="hover:bg-slate-700/30 transition-colors">
-                                                <td className="px-5 py-4">
+                                                <td className="px-6 py-4">
                                                     <div className="text-sm font-semibold text-slate-200">{eng.name}</div>
                                                 </td>
-                                                <td className="px-5 py-4">
+                                                <td className="px-6 py-4">
                                                     <button
                                                         onClick={() => {
                                                             if (Number(eng.resolved_count) === 0) return;
@@ -640,10 +650,10 @@ const AdminDashboard = () => {
                                                             setSelectedTicket(null);
                                                         }}
                                                         disabled={Number(eng.resolved_count) === 0}
-                                                        className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border transition-all
+                                                        className={`inline-flex items-center justify-center px-4 py-1.5 rounded-full text-xs font-bold border transition-all
                                                             ${Number(eng.resolved_count) > 0
-                                                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/25 cursor-pointer'
-                                                                : 'bg-slate-700/30 text-slate-500 border-slate-600/30 cursor-not-allowed'
+                                                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25 cursor-pointer shadow-sm'
+                                                                : 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed'
                                                             }`}
                                                     >
                                                         {eng.resolved_count} {eng.resolved_count === 1 ? 'Ticket' : 'Tickets'}
