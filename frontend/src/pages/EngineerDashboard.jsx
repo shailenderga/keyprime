@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
@@ -11,6 +11,10 @@ const EngineerDashboard = () => {
     const { user } = useContext(AuthContext);
     const [tickets, setTickets] = useState([]);
     const [selectedTicket, setSelectedTicket] = useState(null);
+    const selectedTicketRef = useRef(selectedTicket);
+    useEffect(() => {
+        selectedTicketRef.current = selectedTicket;
+    }, [selectedTicket]);
     const [statusMessage, setStatusMessage] = useState('');
     const [fullScreenImage, setFullScreenImage] = useState(null);
     const [activeTab, setActiveTab] = useState('active');
@@ -31,6 +35,15 @@ const EngineerDashboard = () => {
 
     useEffect(() => {
         fetchTickets();
+
+        const pollInterval = setInterval(() => {
+            fetchTickets();
+            if (selectedTicketRef.current) {
+                fetchUpdates(selectedTicketRef.current.id);
+            }
+        }, 3000);
+
+        return () => clearInterval(pollInterval);
     }, [activeTab]);
 
     const handleEngineerRaiseTicket = async (e) => {

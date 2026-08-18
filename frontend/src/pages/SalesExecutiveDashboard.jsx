@@ -34,6 +34,12 @@ const SalesExecutiveDashboard = () => {
     useEffect(() => {
         fetchTickets();
         fetchEngineers();
+
+        const pollInterval = setInterval(() => {
+            fetchTickets();
+        }, 3000);
+
+        return () => clearInterval(pollInterval);
     }, [activeTab]);
 
     const handleFileChange = (e) => {

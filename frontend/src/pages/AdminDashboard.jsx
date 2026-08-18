@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useMemo } from 'react';
+import { useState, useEffect, useContext, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
@@ -10,8 +10,13 @@ import { API_URL } from '../config';
 const AdminDashboard = () => {
     const { user } = useContext(AuthContext);
     const [tickets, setTickets] = useState([]);
+    const [allUsers, setAllUsers] = useState([]);
     const [engineers, setEngineers] = useState([]);
     const [selectedTicket, setSelectedTicket] = useState(null);
+    const selectedTicketRef = useRef(selectedTicket);
+    useEffect(() => {
+        selectedTicketRef.current = selectedTicket;
+    }, [selectedTicket]);
     const [fullScreenImage, setFullScreenImage] = useState(null);
     const [updates, setUpdates] = useState([]);
     const [showUserForm, setShowUserForm] = useState(false);
@@ -19,7 +24,6 @@ const AdminDashboard = () => {
     const [userMessage, setUserMessage] = useState('');
     const [showUserPassword, setShowUserPassword] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
-    const [allUsers, setAllUsers] = useState([]);
     // Filters & Search
     const [globalSearch, setGlobalSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -116,11 +120,25 @@ const AdminDashboard = () => {
         if (activeTab === 'settings') {
             fetchSettings();
         } else if (activeTab === 'overview') {
-            fetchStats();
+            fetchStats(engFrom, engTo);
         } else {
             fetchTickets();
         }
-    }, [activeTab]);
+
+        const pollInterval = setInterval(() => {
+            fetchData();
+            if (activeTab === 'overview') {
+                fetchStats(engFrom, engTo);
+            } else if (activeTab !== 'settings') {
+                fetchTickets();
+            }
+            if (selectedTicketRef.current) {
+                fetchUpdates(selectedTicketRef.current.id);
+            }
+        }, 3000);
+
+        return () => clearInterval(pollInterval);
+    }, [activeTab, engFrom, engTo]);
 
     // Unified client-side filtering
     const filteredTickets = useMemo(() => {
