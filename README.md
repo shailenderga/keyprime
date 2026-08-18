@@ -1,36 +1,62 @@
 # 🛠️ SupportDesk - Full-Stack IT Support & Ticket Management System
 
-SupportDesk is a modern, enterprise-grade multi-role IT Support & Ticket Management System built with **React (Vite)**, **Express.js (Node.js)**, **MySQL (Aiven Cloud / Local MySQL)**, and **Tailwind CSS**.
+SupportDesk is a modern, enterprise-grade multi-role IT Support & Ticket Management System built with **React 18 (Vite)**, **Express.js (Node.js)**, **MySQL (Aiven Cloud / Local MySQL)**, and **Tailwind CSS**.
 
 ---
 
-## ✨ Features & User Roles
+## ✨ Key Features & User Roles
+
+### ⚡ Real-Time Live Synchronization (3-Second Auto-Sync)
+- **Instant Multi-Device Auto-Polling**: All dashboards (Admin, Engineer, Sales Executive, Customer) automatically poll updates every 3 seconds seamlessly.
+- **Zero Manual Reloads Needed**: When Admin raises or assigns a ticket, or when an Engineer updates ticket status or posts a comment, changes instantly reflect across all logged-in devices.
+
+---
 
 ### 👑 Admin Dashboard
-- **Overview Analytics**: Real-time stats on tickets, admins, engineers, and ticket status breakdowns.
-- **Ticket Management**: View active and historical tickets, search by customer/salesman name, filter by date range, and assign engineers dynamically.
-- **User Management**: Add, approve, decline, deactivate, or delete Engineers, Sales Executives, and Customers.
-- **Approval Queue**: Dedicated approvals tab to review new customer sign-ups with detailed user modals.
+- **Overview Analytics**: Real-time stats on tickets, users, role distributions, and center-aligned engineer performance metrics with dark-mode date range filters.
+- **Admin Ticket Creation**: Dedicated `+ Raise Ticket` modal to create tickets for existing or new customers (auto-registered via phone) with engineer assignment.
+- **Ticket Deletion & Status Management**: Permanently delete any unwanted/test ticket, or directly update ticket status (Solve & Close, Mark Pending, Reopen).
+- **Engineer Rating & Review**: Interactive 5-Star Rating component + Feedback Textarea allowing Admin to review and rate assigned engineers directly.
+- **User Management & Approvals**: Add, approve, decline, deactivate, or delete Engineers, Sales Executives, and Customers.
 - **System Email Settings**: Configure Gmail SMTP and 16-digit Google App Password for automated OTPs and email notifications.
 
+---
+
 ### 🛠️ Engineer Dashboard
-- **Assigned Tickets**: View and manage tickets assigned specifically to the logged-in engineer.
-- **Status Workflows**: Update ticket status (`open` ➔ `pending` ➔ `solve_requested` ➔ `closed`).
-- **Interactive Updates**: Post comments and communicate directly on ticket threads.
+- **Engineer Ticket Creation & Auto-Assignment**: `+ Raise Ticket` modal allowing Engineers to raise tickets directly, which are **automatically assigned to themselves** (`assigned_engineer_id = engineer_id`).
+- **Assigned Workspace**: View active and historical tickets assigned specifically to the logged-in engineer.
+- **Status Workflows**: Update ticket status (`open` ➔ `pending` ➔ `solve_requested` ➔ `closed`) with details about fixes.
+- **Interactive Discussion Threads**: Post comments and communicate directly on ticket activity timelines.
+
+---
 
 ### 💼 Sales Executive Dashboard
-- **Raise Tickets on Behalf of Customers**: Auto-creates or links customer profiles using phone numbers.
-- **Ticket Tracking**: Monitor raised ticket statuses and customer resolution progress.
+- **Raise Tickets on Behalf of Customers**: Auto-creates or links customer profiles using phone numbers and store details.
+- **Progress Tracking**: Monitor ticket statuses, engineer assignments, and resolution updates in real-time.
+
+---
 
 ### 👤 Customer Dashboard
-- **Ticket Submission**: Raise tickets with multiple screenshot file attachments.
+- **Streamlined Ticket Submission**: Raise support tickets with multiple screenshot file attachments.
 - **Engineer Transparency**: View assigned support engineer details (name, photo, phone number).
-- **Feedback & Rating**: Rate engineer support experience upon ticket closure (1-5 stars with feedback text).
+- **Feedback & Rating**: Rate engineer support experience upon ticket closure (1-5 stars with written feedback).
+
+---
+
+### 🏷️ Explicit Ticket Attribution ("Raised By")
+Every ticket across all dashboards features clear visual badges indicating who initiated the ticket:
+- 🟣 **`Raised By: Admin ([Name])`**
+- 🟢 **`Raised By: Engineer ([Name]) (Self-Assigned)`**
+- 🟠 **`Raised By: Sales Exec ([Name])`**
+- 🔵 **`Raised By: Customer (Direct)`**
+
+---
 
 ### 🔑 Authentication & Security
 - **Google OAuth 2.0 Integration**: Single Sign-On with dedicated profile completion modal for new users.
 - **Email OTP Verification**: 6-digit OTP verification for new customer registrations.
 - **Forgot Password Workflow**: 3-step OTP-based password reset directly from the login page.
+- **Password Eye Toggle**: Interactive password visibility toggle buttons (`FiEye` / `FiEyeOff`).
 - **JWT Authentication**: Secure token-based session handling.
 
 ---
@@ -39,7 +65,7 @@ SupportDesk is a modern, enterprise-grade multi-role IT Support & Ticket Managem
 
 - **Frontend**: React 18, Vite, Tailwind CSS, React Router DOM, React Icons, Axios, `@react-oauth/google`.
 - **Backend**: Node.js, Express.js, `mysql2/promise` (with SSL support), JWT, Bcrypt, Multer (File Uploads), Nodemailer.
-- **Database**: Cloud MySQL (Aiven Cloud MySQL / TiDB / CleverCloud / Local MySQL).
+- **Database**: Cloud MySQL (Aiven Cloud MySQL / TiDB / Local MySQL).
 - **Hosting / Deployment**: Vercel (Serverless Functions & Vite SPA Deployment).
 
 ---
@@ -66,11 +92,11 @@ npm install
 Create a `.env` file inside the `backend/` folder:
 ```env
 PORT=5000
-DB_HOST=
-DB_USER=
-DB_PASSWORD=
-DB_NAME=
-DB_PORT=
+DB_HOST=mysql-e38187b-keyprime-e0a5.k.aivencloud.com
+DB_USER=avnadmin
+DB_PASSWORD=YOUR_AIVEN_DB_PASSWORD
+DB_NAME=defaultdb
+DB_PORT=20690
 JWT_SECRET=supersecretjwtkey
 ```
 
@@ -119,16 +145,16 @@ npm run dev
 3. Import your GitHub repository: `shailenderga/keyprime`.
 4. On the **Configure Project** page:
    - **Root Directory**: Click *Edit* ➔ Select the `backend` folder.
-5. Expand **Environment Variables** and add the following 6 keys:
+5. Expand **Environment Variables** and add the following keys:
 
 | Environment Variable | Value |
 |----------------------|-------|
-| `DB_HOST` | `` |
-| `DB_USER` | `` |
+| `DB_HOST` | `mysql-e38187b-keyprime-e0a5.k.aivencloud.com` |
+| `DB_USER` | `avnadmin` |
 | `DB_PASSWORD` | *Your Aiven Database Password* |
-| `DB_NAME` | `` |
-| `DB_PORT` | `` |
-| `JWT_SECRET` | `` |
+| `DB_NAME` | `defaultdb` |
+| `DB_PORT` | `20690` |
+| `JWT_SECRET` | `supersecretjwtkey` |
 
 6. Click **Deploy**.
 7. Once deployed, copy your active Backend URL (e.g., `https://helpdesk-pi-eight.vercel.app`).
@@ -138,7 +164,7 @@ npm run dev
 ### Step 3: Deploy Frontend to Vercel
 1. Return to [Vercel Dashboard](https://vercel.com/dashboard).
 2. Click **Add New...** ➔ **Project**.
-3. Import the same GitHub repository (`Your git username and repo name`).
+3. Import the same GitHub repository (`shailenderga/keyprime`).
 4. On the **Configure Project** page:
    - **Root Directory**: Click *Edit* ➔ Select the `frontend` folder.
    - **Framework Preset**: `Vite` (Default).
