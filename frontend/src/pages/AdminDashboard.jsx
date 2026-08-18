@@ -584,40 +584,38 @@ const AdminDashboard = () => {
                     </div>
 
                     {stats?.engineerStats && stats.engineerStats.length > 0 && (
-                        <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-xl mt-8">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-700/50">
-                                <div>
-                                    <h2 className="text-xl font-display font-bold text-white">Engineer Performance</h2>
-                                    <p className="text-xs text-slate-400 mt-1 font-medium">
-                                        {!engFrom && !engTo ? 'Showing stats for Last 30 Days (default)' : `Filtered Range: ${engFrom || 'Start'} to ${engTo || 'Today'}`}
-                                    </p>
-                                </div>
+                        <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 sm:p-8 shadow-xl mt-8 flex flex-col items-center text-center">
+                            <div className="w-full flex flex-col items-center justify-center text-center mb-6 pb-6 border-b border-slate-700/50">
+                                <h2 className="text-2xl font-display font-bold text-white tracking-tight">Engineer Performance</h2>
+                                <p className="text-xs text-slate-400 mt-1 font-medium">
+                                    {!engFrom && !engTo ? 'Showing stats for Last 30 Days (default)' : `Filtered Range: ${engFrom || 'Start'} to ${engTo || 'Today'}`}
+                                </p>
                                 
-                                <div className="flex flex-wrap items-center gap-3 bg-slate-900/60 p-2 rounded-xl border border-slate-700/50">
-                                    <div className="flex items-center gap-2 px-1">
+                                <div className="flex flex-wrap items-center justify-center gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-700/50 mt-4">
+                                    <div className="flex items-center gap-2 px-2">
                                         <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">From</span>
                                         <input
                                             type="date"
                                             value={engFrom}
                                             onChange={e => { setEngFrom(e.target.value); fetchStats(e.target.value, engTo); }}
-                                            className="bg-slate-800 border border-slate-700 text-slate-200 text-xs px-3 py-2 rounded-lg outline-none focus:border-indigo-500 transition-colors min-w-[135px] [color-scheme:dark]"
+                                            className="bg-slate-800 border border-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl outline-none focus:border-indigo-500 transition-colors min-w-[140px] text-center [color-scheme:dark]"
                                         />
                                     </div>
                                     
-                                    <div className="flex items-center gap-2 px-1">
+                                    <div className="flex items-center gap-2 px-2">
                                         <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">To</span>
                                         <input
                                             type="date"
                                             value={engTo}
                                             onChange={e => { setEngTo(e.target.value); fetchStats(engFrom, e.target.value); }}
-                                            className="bg-slate-800 border border-slate-700 text-slate-200 text-xs px-3 py-2 rounded-lg outline-none focus:border-indigo-500 transition-colors min-w-[135px] [color-scheme:dark]"
+                                            className="bg-slate-800 border border-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl outline-none focus:border-indigo-500 transition-colors min-w-[140px] text-center [color-scheme:dark]"
                                         />
                                     </div>
                                     
                                     {(engFrom || engTo) && (
                                         <button
                                             onClick={() => { setEngFrom(''); setEngTo(''); fetchStats('', ''); }}
-                                            className="text-xs font-bold text-rose-400 hover:text-rose-300 px-3 py-1.5 border border-rose-500/30 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 transition-colors ml-auto sm:ml-0"
+                                            className="text-xs font-bold text-rose-400 hover:text-rose-300 px-3.5 py-2 border border-rose-500/30 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 transition-colors"
                                         >
                                             Clear Filter
                                         </button>
@@ -625,21 +623,21 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
 
-                            <div className="overflow-x-auto rounded-xl border border-slate-700/40">
-                                <table className="min-w-full divide-y divide-slate-700/50">
-                                    <thead className="bg-slate-900/60">
+                            <div className="w-full max-w-3xl overflow-x-auto rounded-2xl border border-slate-700/40 shadow-inner">
+                                <table className="w-full divide-y divide-slate-700/50">
+                                    <thead className="bg-slate-900/70">
                                         <tr>
-                                            <th className="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Engineer Name</th>
-                                            <th className="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Tickets Solved / Closed</th>
+                                            <th className="px-6 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Engineer Name</th>
+                                            <th className="px-6 py-4 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Tickets Solved / Closed</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-700/30 bg-slate-900/20">
+                                    <tbody className="divide-y divide-slate-700/30 bg-slate-900/20 text-center">
                                         {stats.engineerStats.map((eng) => (
                                             <tr key={eng.id} className="hover:bg-slate-700/30 transition-colors">
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-4 text-center">
                                                     <div className="text-sm font-semibold text-slate-200">{eng.name}</div>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-4 text-center">
                                                     <button
                                                         onClick={() => {
                                                             if (Number(eng.resolved_count) === 0) return;
