@@ -58,6 +58,13 @@ const AdminDashboard = () => {
     const [raiseTicketLoading, setRaiseTicketLoading] = useState(false);
     const [raiseTicketMessage, setRaiseTicketMessage] = useState('');
 
+    // Admin Rating State
+    const [adminRating, setAdminRating] = useState(0);
+    const [adminHoverRating, setAdminHoverRating] = useState(0);
+    const [adminFeedback, setAdminFeedback] = useState('');
+    const [ratingSubmitting, setRatingSubmitting] = useState(false);
+    const [ratingSuccessMessage, setRatingSuccessMessage] = useState('');
+
     const fetchSettings = async () => {
         try {
             const res = await axios.get(`${API_URL}/api/settings`);
@@ -162,6 +169,38 @@ const AdminDashboard = () => {
         setSelectedTicket(ticket);
         fetchUpdates(ticket.id);
         setCommentText('');
+        setAdminRating(ticket.engineer_rating || 0);
+        setAdminFeedback(ticket.engineer_feedback || '');
+        setRatingSuccessMessage('');
+    };
+
+    const handleSubmitAdminRating = async (ticketId) => {
+        if (!adminRating) {
+            alert('Please select a star rating (1 to 5)');
+            return;
+        }
+        setRatingSubmitting(true);
+        setRatingSuccessMessage('');
+        try {
+            await axios.post(`${API_URL}/api/tickets/${ticketId}/rate`, {
+                rating: adminRating,
+                feedback: adminFeedback
+            });
+            setRatingSuccessMessage('Rating submitted successfully!');
+            if (selectedTicket && selectedTicket.id === ticketId) {
+                setSelectedTicket(prev => ({
+                    ...prev,
+                    engineer_rating: adminRating,
+                    engineer_feedback: adminFeedback
+                }));
+            }
+            fetchTickets();
+            setTimeout(() => setRatingSuccessMessage(''), 2000);
+        } catch (error) {
+            alert('Failed to submit rating');
+        } finally {
+            setRatingSubmitting(false);
+        }
     };
 
     const handlePostComment = async () => {
@@ -898,16 +937,67 @@ const AdminDashboard = () => {
                                         </div>
                                     )}
 
-                                    {selectedTicket.engineer_rating && (
+                                    {selectedTicket.assigned_engineer_id && (
                                         <div className="border-t border-slate-700 pt-6 mt-6">
-                                            <h3 className="font-semibold text-slate-300 mb-4 text-sm">Customer Rating</h3>
-                                            <div className="bg-slate-900/40 p-4 rounded-xl border border-yellow-500/20">
-                                                <div className="flex text-yellow-400 text-lg mb-2">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <span key={i} className={i < selectedTicket.engineer_rating ? '' : 'text-slate-700'}>★</span>
-                                                    ))}
+                                            <h3 className="font-semibold text-slate-300 mb-3 text-sm flex items-center justify-between">
+                                                <span>Engineer Rating & Feedback</span>
+                                                {selectedTicket.engineer_rating ? (
+                                                    <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Rated: {selectedTicket.engineer_rating}/5 ★</span>
+                                                ) : (
+                                                    <span className="text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Pending Rating</span>
+                                                )}
+                                            </h3>
+
+                                            <div className="bg-slate-900/50 p-4 sm:p-5 rounded-2xl border border-slate-700/50 space-y-4">
+                                                {ratingSuccessMessage && (
+                                                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-xs font-bold">
+                                                        {ratingSuccessMessage}
+                                                    </div>
+                                                )}
+
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                                        Rate Engineer Performance ({selectedTicket.engineer_name || 'Assigned Engineer'})
+                                                    </label>
+                                                    <div className="flex items-center gap-2">
+                                                        {[1, 2, 3, 4, 5].map((star) => (
+                                                            <button
+                                                                key={star}
+                                                                type="button"
+                                                                onClick={() => setAdminRating(star)}
+                                                                onMouseEnter={() => setAdminHoverRating(star)}
+                                                                onMouseLeave={() => setAdminHoverRating(0)}
+                                                                className="text-2xl transition-transform transform hover:scale-125 focus:outline-none"
+                                                            >
+                                                                <span className={(adminHoverRating || adminRating) >= star ? 'text-yellow-400' : 'text-slate-600'}>
+                                                                    ★
+                                                                </span>
+                                                            </button>
+                                                        ))}
+                                                        <span className="ml-2 text-xs font-bold text-slate-300">
+                                                            {adminRating > 0 ? `${adminRating} / 5 Stars` : 'Select stars'}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                {selectedTicket.engineer_feedback && <p className="text-sm text-slate-300 italic">"{selectedTicket.engineer_feedback}"</p>}
+
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Feedback / Review Notes</label>
+                                                    <textarea
+                                                        value={adminFeedback}
+                                                        onChange={(e) => setAdminFeedback(e.target.value)}
+                                                        placeholder="Enter review or feedback for the engineer's work..."
+                                                        className="w-full bg-slate-800 border border-slate-700 text-slate-200 px-3.5 py-2.5 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors h-20 resize-none"
+                                                    />
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleSubmitAdminRating(selectedTicket.id)}
+                                                    disabled={ratingSubmitting}
+                                                    className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                                                >
+                                                    {selectedTicket.engineer_rating ? 'Update Engineer Rating' : 'Submit Engineer Rating'}
+                                                </button>
                                             </div>
                                         </div>
                                     )}
