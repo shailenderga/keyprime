@@ -1393,30 +1393,18 @@ const AdminDashboard = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Software Version</label>
-                                        <input 
-                                            type="text"
-                                            value={raiseTicketFormData.software_version}
-                                            onChange={e => setRaiseTicketFormData({...raiseTicketFormData, software_version: e.target.value})}
-                                            placeholder="e.g. v2.4.1"
-                                            className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Assign Engineer (Optional)</label>
-                                        <select
-                                            value={raiseTicketFormData.assigned_engineer_id}
-                                            onChange={e => setRaiseTicketFormData({...raiseTicketFormData, assigned_engineer_id: e.target.value})}
-                                            className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
-                                        >
-                                            <option value="">Unassigned (Assign later)</option>
-                                            {engineers.map(eng => (
-                                                <option key={eng.id} value={eng.id}>{eng.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Assign Engineer (Optional)</label>
+                                    <select
+                                        value={raiseTicketFormData.assigned_engineer_id}
+                                        onChange={e => setRaiseTicketFormData({...raiseTicketFormData, assigned_engineer_id: e.target.value})}
+                                        className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
+                                    >
+                                        <option value="">Unassigned (Assign later)</option>
+                                        {engineers.map(eng => (
+                                            <option key={eng.id} value={eng.id}>{eng.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 <div>

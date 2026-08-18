@@ -432,16 +432,7 @@ const EngineerDashboard = () => {
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Software Version</label>
-                                    <input 
-                                        type="text"
-                                        value={raiseFormData.software_version}
-                                        onChange={e => setRaiseFormData({...raiseFormData, software_version: e.target.value})}
-                                        placeholder="e.g. v2.4.1"
-                                        className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
-                                    />
-                                </div>
+
 
                                 <div>
                                     <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Issue Description *</label>
