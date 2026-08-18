@@ -749,7 +749,12 @@ const AdminDashboard = () => {
                                                 <div className="text-sm font-semibold text-slate-200">{ticket.customer_name}</div>
                                                 <div className="text-xs font-medium text-slate-400">{ticket.customer_phone || 'No phone'}</div>
                                                 <div className="text-xs text-slate-400 mt-0.5 truncate max-w-[150px]">{ticket.store_name}</div>
-                                                {ticket.admin_name ? (
+                                                {ticket.raised_by_engineer_name ? (
+                                                    <div className="text-[10px] font-bold text-emerald-400 mt-1 flex items-center gap-1">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+                                                        Raised By: Engineer ({ticket.raised_by_engineer_name})
+                                                    </div>
+                                                ) : ticket.admin_name ? (
                                                     <div className="text-[10px] font-bold text-purple-400 mt-1 flex items-center gap-1">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block"></span>
                                                         Raised By: Admin ({ticket.admin_name})

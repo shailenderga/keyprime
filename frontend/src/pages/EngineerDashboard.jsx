@@ -1,9 +1,11 @@
 import { useState, useEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { format } from 'date-fns';
 import ImageModal from '../components/ImageModal';
 import { API_URL } from '../config';
+import { FiPlus } from 'react-icons/fi';
 
 const EngineerDashboard = () => {
     const { user } = useContext(AuthContext);
@@ -15,6 +17,13 @@ const EngineerDashboard = () => {
     const [updates, setUpdates] = useState([]);
     const [commentText, setCommentText] = useState('');
 
+    // Raise Ticket Modal State for Engineer
+    const [showRaiseModal, setShowRaiseModal] = useState(false);
+    const [raiseFormData, setRaiseFormData] = useState({ name: '', phone: '', store_name: '', location: '', software_version: '', description: '' });
+    const [raiseScreenshots, setRaiseScreenshots] = useState([]);
+    const [raiseLoading, setRaiseLoading] = useState(false);
+    const [raiseMessage, setRaiseMessage] = useState('');
+
     const fetchTickets = async () => {
         const res = await axios.get(`${API_URL}/api/tickets?role=engineer&userId=${user.id}&tab=${activeTab}`);
         setTickets(res.data);
@@ -23,6 +32,42 @@ const EngineerDashboard = () => {
     useEffect(() => {
         fetchTickets();
     }, [activeTab]);
+
+    const handleEngineerRaiseTicket = async (e) => {
+        e.preventDefault();
+        setRaiseLoading(true);
+        setRaiseMessage('');
+
+        const formData = new FormData();
+        formData.append('engineer_id', user.id);
+        formData.append('name', raiseFormData.name);
+        formData.append('phone', raiseFormData.phone);
+        formData.append('store_name', raiseFormData.store_name);
+        formData.append('location', raiseFormData.location);
+        formData.append('software_version', raiseFormData.software_version);
+        formData.append('description', raiseFormData.description);
+        for (let i = 0; i < raiseScreenshots.length; i++) {
+            formData.append('screenshots', raiseScreenshots[i]);
+        }
+
+        try {
+            await axios.post(`${API_URL}/api/tickets/engineer`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setRaiseMessage('Ticket raised and assigned to you automatically!');
+            setRaiseFormData({ name: '', phone: '', store_name: '', location: '', software_version: '', description: '' });
+            setRaiseScreenshots([]);
+            fetchTickets();
+            setTimeout(() => {
+                setShowRaiseModal(false);
+                setRaiseMessage('');
+            }, 1500);
+        } catch (error) {
+            setRaiseMessage(error.response?.data?.error || 'Failed to raise ticket');
+        } finally {
+            setRaiseLoading(false);
+        }
+    };
 
     const handleUpdateStatus = async (status) => {
         await axios.put(`${API_URL}/api/tickets/${selectedTicket.id}/status`, { 
@@ -87,7 +132,18 @@ const EngineerDashboard = () => {
 
     return (
         <div className="animate-fade-in max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-            <h1 className="text-3xl font-display font-bold text-white tracking-tight mb-6">Engineer Workspace</h1>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                    <h1 className="text-3xl font-display font-bold text-white tracking-tight">Engineer Workspace</h1>
+                    <p className="text-slate-400 text-sm mt-1">Manage assigned tickets or raise tickets directly</p>
+                </div>
+                <button 
+                    onClick={() => setShowRaiseModal(true)} 
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-5 py-2.5 rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] text-sm flex items-center gap-2"
+                >
+                    <FiPlus size={16} /> Raise Ticket
+                </button>
+            </div>
 
             <div className="flex bg-slate-900/50 p-1 rounded-xl w-fit mb-8 border border-slate-700/50">
                 <button 
@@ -117,7 +173,9 @@ const EngineerDashboard = () => {
                             </div>
                             <h3 className="text-sm font-semibold text-slate-200 truncate mb-2">{ticket.description}</h3>
                             <div className="text-xs font-medium text-slate-400 flex items-center gap-1.5 mb-1"><svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> {ticket.customer_name}</div>
-                            {ticket.admin_name ? (
+                            {ticket.raised_by_engineer_name ? (
+                                <div className="text-[10px] font-bold text-emerald-400">Raised By: You ({ticket.raised_by_engineer_name}) (Self-Assigned)</div>
+                            ) : ticket.admin_name ? (
                                 <div className="text-[10px] font-bold text-purple-400">Raised By: Admin ({ticket.admin_name})</div>
                             ) : ticket.salesman_name ? (
                                 <div className="text-[10px] font-bold text-amber-400">Raised By: Sales Exec ({ticket.salesman_name})</div>
@@ -147,7 +205,9 @@ const EngineerDashboard = () => {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Raised By</p>
-                                        {selectedTicket.admin_name ? (
+                                        {selectedTicket.raised_by_engineer_name ? (
+                                            <p className="text-xs font-bold text-emerald-400">Engineer ({selectedTicket.raised_by_engineer_name}) (Self)</p>
+                                        ) : selectedTicket.admin_name ? (
                                             <p className="text-xs font-bold text-purple-400">Admin ({selectedTicket.admin_name})</p>
                                         ) : selectedTicket.salesman_name ? (
                                             <p className="text-xs font-bold text-amber-400">Sales Exec ({selectedTicket.salesman_name})</p>
@@ -292,6 +352,129 @@ const EngineerDashboard = () => {
                 )}
             </div>
             
+            {showRaiseModal && createPortal(
+                <div className="fixed inset-0 z-[9999] overflow-y-auto bg-slate-950/80 backdrop-blur-md animate-fade-in p-4">
+                    <div className="min-h-full flex items-center justify-center">
+                        <div className="bg-slate-900 border border-slate-700/70 rounded-2xl w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-fade-in-up my-8 relative z-[10000]">
+                            <div className="flex justify-between items-center px-6 py-5 border-b border-slate-700/50 bg-slate-800/50">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                                        <FiPlus size={18} />
+                                    </div>
+                                    <h2 className="text-xl font-display font-bold text-white">Raise Ticket (Auto-Assigned to You)</h2>
+                                </div>
+                                <button onClick={() => setShowRaiseModal(false)} className="text-slate-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700/60 font-bold">&times;</button>
+                            </div>
+                            
+                            <form onSubmit={handleEngineerRaiseTicket} className="p-6 space-y-4">
+                                {raiseMessage && (
+                                    <div className={`p-3.5 rounded-xl text-sm font-semibold ${raiseMessage.includes('automatically') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                                        {raiseMessage}
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Customer Phone</label>
+                                        <input 
+                                            type="text"
+                                            value={raiseFormData.phone}
+                                            onChange={e => setRaiseFormData({...raiseFormData, phone: e.target.value})}
+                                            placeholder="10-digit Phone"
+                                            className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Customer Name</label>
+                                        <input 
+                                            type="text"
+                                            value={raiseFormData.name}
+                                            onChange={e => setRaiseFormData({...raiseFormData, name: e.target.value})}
+                                            placeholder="Full Name"
+                                            className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Store / Business Name</label>
+                                        <input 
+                                            type="text"
+                                            value={raiseFormData.store_name}
+                                            onChange={e => setRaiseFormData({...raiseFormData, store_name: e.target.value})}
+                                            placeholder="e.g. Metro Mart"
+                                            className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Location / City</label>
+                                        <input 
+                                            type="text"
+                                            value={raiseFormData.location}
+                                            onChange={e => setRaiseFormData({...raiseFormData, location: e.target.value})}
+                                            placeholder="e.g. Mumbai"
+                                            className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Software Version</label>
+                                    <input 
+                                        type="text"
+                                        value={raiseFormData.software_version}
+                                        onChange={e => setRaiseFormData({...raiseFormData, software_version: e.target.value})}
+                                        placeholder="e.g. v2.4.1"
+                                        className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Issue Description *</label>
+                                    <textarea 
+                                        required
+                                        value={raiseFormData.description}
+                                        onChange={e => setRaiseFormData({...raiseFormData, description: e.target.value})}
+                                        placeholder="Describe the issue in detail..."
+                                        className="w-full bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-3 rounded-xl text-sm outline-none focus:border-indigo-500 transition-colors h-24 resize-none"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Attach Screenshots (Optional)</label>
+                                    <input 
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        onChange={e => setRaiseScreenshots(e.target.files)}
+                                        className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700 cursor-pointer"
+                                    />
+                                </div>
+
+                                <div className="pt-3 flex gap-3">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setShowRaiseModal(false)}
+                                        className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-sm transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        disabled={raiseLoading}
+                                        className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-50"
+                                    >
+                                        {raiseLoading ? 'Raising Ticket...' : 'Submit & Auto-Assign'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+
             <ImageModal imageUrl={fullScreenImage} onClose={() => setFullScreenImage(null)} />
         </div>
     );
