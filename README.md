@@ -20,6 +20,13 @@ SupportDesk is a modern, enterprise-grade multi-role IT Support & Ticket Managem
 
 ---
 
+### 📷 Profile Photo Upload & Settings
+- **Interactive Avatar Uploader**: Direct profile photo uploader inside **Profile Settings Modal** and **Navbar** with live preview and camera overlay.
+- **Universal Image Support**: Works with local uploaded images, base64 strings, and external Google OAuth avatar URLs (`https://lh3.googleusercontent.com/...`).
+- **Real-Time Context Sync**: Updating your profile photo or profile details instantly syncs across all components without needing page refreshes.
+
+---
+
 ### 👑 Admin Dashboard
 - **Overview Analytics**: Real-time stats on tickets, users, role distributions, and center-aligned engineer performance metrics with dark-mode date range filters.
 - **Admin Ticket Creation**: Dedicated `+ Raise Ticket` modal to create tickets for existing or new customers (auto-registered via phone) with engineer assignment.
@@ -77,12 +84,13 @@ CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
+  password VARCHAR(255) NULL,
   phone VARCHAR(50) NULL,
   store_name VARCHAR(255) NULL,
   location VARCHAR(255) NULL,
+  profile_photo TEXT NULL,
   role ENUM('admin', 'engineer', 'sales_executive', 'customer') DEFAULT 'customer',
-  account_status ENUM('pending', 'active', 'declined', 'deactivated') DEFAULT 'active',
+  account_status ENUM('pending_verification', 'pending_approval', 'active', 'declined', 'inactive') DEFAULT 'active',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -91,7 +99,6 @@ CREATE TABLE tickets (
   id INT AUTO_INCREMENT PRIMARY KEY,
   customer_id INT NOT NULL,
   customer_ticket_no INT DEFAULT 1,
-  software_version VARCHAR(100) NULL,
   description TEXT NOT NULL,
   screenshot_url TEXT NULL,
   status ENUM('open', 'pending', 'solve_requested', 'closed', 'not_solved') DEFAULT 'open',
@@ -125,12 +132,14 @@ CREATE TABLE ticket_updates (
 
 ## 📡 API Endpoint Directory
 
-### Authentication (`/api/auth`)
+### Authentication & Profile (`/api/auth`)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/auth/register` | Register a new customer with OTP verification |
 | `POST` | `/api/auth/login` | Authenticate user and return JWT token |
 | `POST` | `/api/auth/google` | Google OAuth Single Sign-On |
+| `PUT` | `/api/auth/profile` | Update profile information (Name, Email, Location, Password, Photo) |
+| `PUT` | `/api/auth/profile-photo` | Upload or update user profile picture (`multipart/form-data`) |
 | `POST` | `/api/auth/send-otp` | Send 6-digit email OTP for verification/reset |
 | `POST` | `/api/auth/verify-otp` | Verify OTP for registration or password reset |
 | `POST` | `/api/auth/reset-password` | Reset password using verified OTP |
