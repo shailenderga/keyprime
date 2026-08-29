@@ -62,13 +62,23 @@ export const AuthProvider = ({ children }) => {
     };
 
     const updateUserPhoto = (photoUrl) => {
-        const updatedUser = { ...user, profile_photo: photoUrl };
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(prev => {
+            const updatedUser = { ...prev, profile_photo: photoUrl };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            return updatedUser;
+        });
+    };
+
+    const updateUser = (updatedData) => {
+        setUser(prev => {
+            const updatedUser = { ...prev, ...updatedData };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            return updatedUser;
+        });
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, googleLogin, logout, loading, updateUserPhoto }}>
+        <AuthContext.Provider value={{ user, login, googleLogin, logout, loading, updateUserPhoto, updateUser }}>
             {children}
         </AuthContext.Provider>
     );

@@ -24,6 +24,14 @@ const Navbar = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const getPhotoUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+            return url;
+        }
+        return `${API_URL}${url}`;
+    };
+
     const handlePhotoUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -34,11 +42,14 @@ const Navbar = () => {
 
         setUploading(true);
         try {
-            const res = await axios.put(`${API_URL}/api/auth/profile-photo`, formData);
+            const res = await axios.put(`${API_URL}/api/auth/profile-photo`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             updateUserPhoto(res.data.profile_photo);
             setDropdownOpen(false);
         } catch (error) {
             console.error('Error uploading photo', error);
+            alert('Failed to upload profile photo');
         }
         setUploading(false);
     };
@@ -61,7 +72,7 @@ const Navbar = () => {
                             className={`w-10 h-10 rounded-full overflow-hidden border-2 transition-all focus:outline-none ${dropdownOpen ? 'border-indigo-400 shadow-[0_0_15px_rgba(79,70,229,0.4)]' : 'border-slate-600 hover:border-slate-400'}`}
                         >
                             {user?.profile_photo ? (
-                                <img src={`${API_URL}${user.profile_photo}`} alt="Profile" className="w-full h-full object-cover" />
+                                <img src={getPhotoUrl(user.profile_photo)} alt="Profile" className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-300">
                                     {user?.name?.charAt(0).toUpperCase()}

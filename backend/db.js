@@ -103,7 +103,8 @@ const pool = mysql.createPool({
             );
         }
 
-        try { await pool.query('ALTER TABLE users ADD COLUMN profile_photo VARCHAR(255)'); } catch (e) {}
+        try { await pool.query('ALTER TABLE users ADD COLUMN profile_photo TEXT'); } catch (e) {}
+        try { await pool.query('ALTER TABLE users MODIFY COLUMN profile_photo TEXT'); } catch (e) {}
         try { await pool.query('ALTER TABLE tickets MODIFY COLUMN screenshot_url TEXT'); } catch (e) {}
         try { await pool.query('ALTER TABLE tickets ADD COLUMN is_archived BOOLEAN DEFAULT FALSE'); } catch (e) {}
         try { await pool.query('ALTER TABLE users ADD COLUMN location VARCHAR(255)'); } catch (e) {}

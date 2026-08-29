@@ -1,12 +1,13 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import { API_URL } from '../config';
-import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiCamera, FiUploadCloud } from 'react-icons/fi';
 
 const ProfileModal = ({ isOpen, onClose }) => {
-    const { user } = useContext(AuthContext);
+    const { user, updateUser, updateUserPhoto } = useContext(AuthContext);
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [location, setLocation] = useState('');
     const [password, setPassword] = useState('');
@@ -14,9 +15,13 @@ const ProfileModal = ({ isOpen, onClose }) => {
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [photoUploading, setPhotoUploading] = useState(false);
+
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         if (user && isOpen) {
+            setName(user.name || '');
             setEmail(user.email || '');
             setLocation(user.location || '');
             setPassword('');
@@ -28,13 +33,52 @@ const ProfileModal = ({ isOpen, onClose }) => {
 
     if (!isOpen) return null;
 
+    const getPhotoUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+            return url;
+        }
+        return `${API_URL}${url}`;
+    };
+
+    const handlePhotoSelect = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setPhotoUploading(true);
+        setMessage('');
+
+        const formData = new FormData();
+        formData.append('photo', file);
+        formData.append('user_id', user.id);
+
+        try {
+            const res = await axios.put(`${API_URL}/api/auth/profile-photo`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            updateUserPhoto(res.data.profile_photo);
+            if (res.data.user) {
+                updateUser(res.data.user);
+            }
+            setMessage('Profile photo updated successfully!');
+            setIsError(false);
+        } catch (error) {
+            console.error('Photo upload error:', error);
+            setMessage(error.response?.data?.error || 'Failed to upload profile photo');
+            setIsError(true);
+        } finally {
+            setPhotoUploading(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         setMessage('');
         try {
-            await axios.put(`${API_URL}/api/auth/profile`, {
+            const res = await axios.put(`${API_URL}/api/auth/profile`, {
                 user_id: user.id,
+                name,
                 email,
                 location,
                 password: password || undefined
@@ -42,8 +86,11 @@ const ProfileModal = ({ isOpen, onClose }) => {
             setMessage('Profile updated successfully!');
             setIsError(false);
             
-            const updatedUser = { ...user, email, location };
-            localStorage.setItem('user', JSON.stringify(updatedUser));
+            if (res.data.user) {
+                updateUser(res.data.user);
+            } else {
+                updateUser({ name, email, location });
+            }
             
             setTimeout(() => {
                 onClose();
@@ -64,41 +111,89 @@ const ProfileModal = ({ isOpen, onClose }) => {
                         <h2 className="text-xl font-display font-bold text-white">Profile Settings</h2>
                         <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700/60 font-bold">&times;</button>
                     </div>
+
                     <div className="p-6">
                         {message && (
                             <div className={`p-3.5 rounded-xl text-sm font-semibold mb-5 ${isError ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
                                 {message}
                             </div>
                         )}
-                        <form onSubmit={handleSubmit} className="space-y-5">
+
+                        {/* Interactive Profile Photo Upload */}
+                        <div className="flex flex-col items-center mb-6">
+                            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                                <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-slate-700 group-hover:border-indigo-500 transition-all shadow-xl bg-slate-800 flex items-center justify-center">
+                                    {user?.profile_photo ? (
+                                        <img src={getPhotoUrl(user.profile_photo)} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-3xl font-bold text-slate-300">
+                                            {user?.name?.charAt(0).toUpperCase()}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="absolute inset-0 rounded-full bg-slate-950/60 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <FiCamera size={22} />
+                                    <span className="text-[10px] font-bold mt-1 uppercase tracking-wider">Change</span>
+                                </div>
+                            </div>
+                            
+                            <button 
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={photoUploading}
+                                className="mt-3 text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 transition-all"
+                            >
+                                <FiUploadCloud size={14} />
+                                {photoUploading ? 'Uploading Photo...' : 'Upload Profile Photo'}
+                            </button>
+                            <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                onChange={handlePhotoSelect} 
+                                accept="image/*" 
+                                className="hidden" 
+                            />
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Email Address</label>
+                                <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Full Name</label>
                                 <input 
-                                    type="email" 
-                                    value={email} 
-                                    onChange={(e) => setEmail(e.target.value)} 
-                                    className="w-full bg-slate-800/60 border border-slate-700 text-slate-100 px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all text-sm font-medium"
+                                    type="text" 
+                                    value={name} 
+                                    onChange={(e) => setName(e.target.value)} 
+                                    className="w-full bg-slate-800/60 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all text-sm font-medium"
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Location / City</label>
+                                <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Email Address</label>
+                                <input 
+                                    type="email" 
+                                    value={email} 
+                                    onChange={(e) => setEmail(e.target.value)} 
+                                    className="w-full bg-slate-800/60 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all text-sm font-medium"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Location / City</label>
                                 <input 
                                     type="text" 
                                     value={location} 
                                     onChange={(e) => setLocation(e.target.value)} 
-                                    className="w-full bg-slate-800/60 border border-slate-700 text-slate-100 px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all text-sm font-medium"
+                                    className="w-full bg-slate-800/60 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all text-sm font-medium"
                                     placeholder="Enter Location"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">New Password</label>
+                                <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wide">New Password</label>
                                 <div className="relative">
                                     <input 
                                         type={showPassword ? 'text' : 'password'} 
                                         value={password} 
                                         onChange={(e) => setPassword(e.target.value)} 
-                                        className="w-full bg-slate-800/60 border border-slate-700 text-slate-100 pl-4 pr-12 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all text-sm font-medium"
+                                        className="w-full bg-slate-800/60 border border-slate-700 text-slate-100 pl-4 pr-12 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all text-sm font-medium"
                                         placeholder="Leave blank to keep current password"
                                     />
                                     <button 
@@ -114,7 +209,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
                                 <button 
                                     type="submit" 
                                     disabled={isLoading}
-                                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)] disabled:opacity-50 text-sm"
+                                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)] disabled:opacity-50 text-sm"
                                 >
                                     {isLoading ? 'Saving...' : 'Save Changes'}
                                 </button>

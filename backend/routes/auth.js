@@ -28,15 +28,23 @@ const upload = multer({ storage });
 router.put('/profile-photo', upload.single('photo'), async (req, res) => {
     try {
         const pool = await poolPromise;
-        const { user_id } = req.body;
-        if (!req.file || !user_id) return res.status(400).json({ error: 'File and user_id are required' });
+        const { user_id, profile_photo } = req.body;
+        if (!user_id) return res.status(400).json({ error: 'User ID is required' });
 
-        const photo_url = `/uploads/${req.file.filename}`;
-        await pool.query('UPDATE users SET profile_photo = ? WHERE id = ?', [photo_url, user_id]);
+        let photo_url = profile_photo || null;
+        if (req.file) {
+            photo_url = `/uploads/${req.file.filename}`;
+        }
+
+        if (photo_url) {
+            await pool.query('UPDATE users SET profile_photo = ? WHERE id = ?', [photo_url, user_id]);
+        }
+
+        const [updatedUsers] = await pool.query('SELECT id, name, role, email, profile_photo, location, phone, store_name FROM users WHERE id = ?', [user_id]);
         
-        res.json({ message: 'Profile photo updated', profile_photo: photo_url });
+        res.json({ message: 'Profile photo updated', profile_photo: photo_url, user: updatedUsers[0] });
     } catch (error) {
-        console.error(error);
+        console.error('Profile photo upload error:', error);
         res.status(500).json({ error: 'Server error', details: error.message });
     }
 });
@@ -321,7 +329,7 @@ router.delete('/users/:id', async (req, res) => {
 router.put('/profile', async (req, res) => {
     try {
         const pool = await poolPromise;
-        const { user_id, name, email, phone, store_name, location, password } = req.body;
+        const { user_id, name, email, phone, store_name, location, password, profile_photo } = req.body;
         
         if (!user_id || !email) {
             return res.status(400).json({ error: 'User ID and email are required' });
@@ -330,13 +338,13 @@ router.put('/profile', async (req, res) => {
         if (password) {
             const hashedPassword = await bcrypt.hash(password, 10);
             await pool.query(
-                'UPDATE users SET name = COALESCE(?, name), email = ?, phone = COALESCE(?, phone), store_name = COALESCE(?, store_name), location = COALESCE(?, location), password = ? WHERE id = ?', 
-                [name, email, phone, store_name, location, hashedPassword, user_id]
+                'UPDATE users SET name = COALESCE(?, name), email = ?, phone = COALESCE(?, phone), store_name = COALESCE(?, store_name), location = COALESCE(?, location), profile_photo = COALESCE(?, profile_photo), password = ? WHERE id = ?', 
+                [name, email, phone, store_name, location, profile_photo, hashedPassword, user_id]
             );
         } else {
             await pool.query(
-                'UPDATE users SET name = COALESCE(?, name), email = ?, phone = COALESCE(?, phone), store_name = COALESCE(?, store_name), location = COALESCE(?, location) WHERE id = ?', 
-                [name, email, phone, store_name, location, user_id]
+                'UPDATE users SET name = COALESCE(?, name), email = ?, phone = COALESCE(?, phone), store_name = COALESCE(?, store_name), location = COALESCE(?, location), profile_photo = COALESCE(?, profile_photo) WHERE id = ?', 
+                [name, email, phone, store_name, location, profile_photo, user_id]
             );
         }
 
