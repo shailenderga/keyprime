@@ -225,7 +225,12 @@ npm run dev
 
 ---
 
-## 🌐 Complete Deployment Guide (Vercel + Aiven MySQL)
+## 🌐 Complete Deployment Guides
+
+### 1. Hostinger Hosting Deployment Guide (VPS & hPanel)
+For deploying to Hostinger VPS (Nginx + PM2 + SSL) or Hostinger Web Hosting (Node.js App + hPanel MySQL + `.htaccess`), see the complete step-by-step guide in [Hostinger Deployment Guide](hostinger_deployment_guide.md).
+
+### 2. Vercel + Aiven Cloud MySQL Deployment Guide
 
 ### Step 1: Configure Aiven Cloud MySQL
 1. Log in to [Aiven Console](https://console.aiven.io).
