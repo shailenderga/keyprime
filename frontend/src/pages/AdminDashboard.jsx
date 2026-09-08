@@ -559,21 +559,20 @@ const AdminDashboard = () => {
                             </button>
                         </div>
                         
+                        <div className="md:col-span-1">
+                            <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Phone Number</label>
+                            <input type="text" value={userFormData.phone} onChange={e => setUserFormData({...userFormData, phone: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all outline-none text-sm" placeholder="Phone Number" />
+                        </div>
+                        <div className="md:col-span-1">
+                            <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Location / City</label>
+                            <input type="text" value={userFormData.location} onChange={e => setUserFormData({...userFormData, location: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all outline-none text-sm" placeholder="Location" />
+                        </div>
+                        
                         {userFormData.role === 'customer' && (
-                            <>
-                                <div className="md:col-span-1">
-                                    <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Phone</label>
-                                    <input type="text" value={userFormData.phone} onChange={e => setUserFormData({...userFormData, phone: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all outline-none text-sm" placeholder="Phone Number" />
-                                </div>
-                                <div className="md:col-span-1">
-                                    <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Location / Address</label>
-                                    <input type="text" value={userFormData.location} onChange={e => setUserFormData({...userFormData, location: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all outline-none text-sm" placeholder="Location" />
-                                </div>
-                                <div className="md:col-span-1">
-                                    <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Store Name</label>
-                                    <input type="text" value={userFormData.store_name} onChange={e => setUserFormData({...userFormData, store_name: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all outline-none text-sm" placeholder="Store Name" />
-                                </div>
-                            </>
+                            <div className="md:col-span-1">
+                                <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Store Name</label>
+                                <input type="text" value={userFormData.store_name} onChange={e => setUserFormData({...userFormData, store_name: e.target.value})} className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all outline-none text-sm" placeholder="Store Name" />
+                            </div>
                         )}
                         <div className="md:col-span-4 flex items-end justify-end mt-2">
                             <button type="submit" className="bg-white text-slate-900 hover:bg-slate-200 px-8 py-2.5 rounded-xl font-bold transition-all text-sm">Create {userFormData.role.charAt(0).toUpperCase() + userFormData.role.slice(1)}</button>
