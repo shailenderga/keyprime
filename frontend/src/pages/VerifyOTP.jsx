@@ -9,6 +9,8 @@ const VerifyOTP = () => {
     const [otp, setOtp] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [resending, setResending] = useState(false);
+    const [resendMsg, setResendMsg] = useState('');
 
     const email = location.state?.email || '';
 
@@ -16,6 +18,7 @@ const VerifyOTP = () => {
         e.preventDefault();
         setError('');
         setSuccess('');
+        setResendMsg('');
         
         try {
             const res = await axios.post(`${API_URL}/api/auth/verify-otp`, { email, otp });
@@ -28,12 +31,26 @@ const VerifyOTP = () => {
         }
     };
 
+    const handleResendOTP = async () => {
+        setResending(true);
+        setResendMsg('');
+        setError('');
+        try {
+            const res = await axios.post(`${API_URL}/api/auth/resend-otp`, { email });
+            setResendMsg(res.data.message || 'OTP resent to your Gmail successfully!');
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to resend OTP');
+        } finally {
+            setResending(false);
+        }
+    };
+
     if (!email) {
         return (
             <div className="flex items-center justify-center min-h-[85vh]">
                 <div className="text-center text-white">
                     <h2 className="text-2xl font-bold mb-4">No email found</h2>
-                    <Link to="/register" className="text-indigo-400 hover:text-indigo-300">Go back to Register</Link>
+                    <Link to="/register" className="text-indigo-400 hover:text-indigo-300 font-semibold">Go back to Register</Link>
                 </div>
             </div>
         );
@@ -53,6 +70,12 @@ const VerifyOTP = () => {
                 
                 {error && <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl mb-6 text-sm font-semibold flex items-center gap-2"><svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>{error}</div>}
                 
+                {resendMsg && (
+                    <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-4 rounded-xl mb-6 text-sm font-semibold">
+                        ✅ {resendMsg}
+                    </div>
+                )}
+
                 {success ? (
                     <div className="bg-green-500/10 border border-green-500/30 text-green-400 p-6 rounded-xl text-center space-y-4">
                         <svg className="w-12 h-12 mx-auto text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -75,6 +98,7 @@ const VerifyOTP = () => {
                                 required
                             />
                         </div>
+
                         <button 
                             type="submit" 
                             disabled={otp.length !== 6}
@@ -83,6 +107,17 @@ const VerifyOTP = () => {
                             Verify Account
                             <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </button>
+
+                        <div className="text-center pt-2">
+                            <button
+                                type="button"
+                                onClick={handleResendOTP}
+                                disabled={resending}
+                                className="text-sm text-indigo-400 hover:text-indigo-300 font-semibold transition-colors disabled:opacity-50"
+                            >
+                                {resending ? 'Sending OTP...' : "Didn't receive code? Resend OTP"}
+                            </button>
+                        </div>
                     </form>
                 )}
             </div>

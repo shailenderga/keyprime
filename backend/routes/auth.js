@@ -67,7 +67,7 @@ router.post('/register', async (req, res) => {
         if (accountStatus === 'pending_verification') {
             otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit OTP
             // Send OTP email asynchronously
-            sendCustomerOTP(email, otp);
+            await sendCustomerOTP(email, otp);
             
             console.log(`\n=========================================`);
             console.log(`🔑 OTP for ${email}: ${otp}`);
@@ -87,6 +87,38 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Email is already registered' });
         }
         res.status(500).json({ error: 'Server error', details: error.message });
+    }
+});
+
+router.post('/resend-otp', async (req, res) => {
+    try {
+        const pool = await poolPromise;
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'Email is required' });
+
+        const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+        if (users.length === 0) return res.status(404).json({ error: 'User not found' });
+
+        const user = users[0];
+        if (user.account_status !== 'pending_verification') {
+            return res.status(400).json({ error: 'Account is already verified' });
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        await pool.query(
+            'UPDATE users SET otp = ?, otp_expiry = DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE id = ?',
+            [otp, user.id]
+        );
+
+        const emailResult = await sendCustomerOTP(email, otp);
+        
+        console.log(`\n=========================================`);
+        console.log(`🔑 Resent OTP for ${email}: ${otp}`);
+        console.log(`=========================================\n`);
+
+        res.json({ message: 'OTP sent to your email successfully', emailResult });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to resend OTP', details: error.message });
     }
 });
 
