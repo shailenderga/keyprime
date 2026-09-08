@@ -2,12 +2,11 @@ import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
-import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 import { API_URL } from '../config';
 
 const Login = () => {
-    const { login, googleLogin } = useContext(AuthContext);
+    const { login } = useContext(AuthContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -23,30 +22,6 @@ const Login = () => {
     const [fpError, setFpError] = useState('');
     const [fpLoading, setFpLoading] = useState(false);
     const [showFpPass, setShowFpPass] = useState(false);
-
-    // Google New User Details Modal
-    const [showGoogleDetailsModal, setShowGoogleDetailsModal] = useState(false);
-    const [googleCreds, setGoogleCreds] = useState(null);
-    const [googleUserMeta, setGoogleUserMeta] = useState({ name: '', email: '' });
-    const [googleForm, setGoogleForm] = useState({ phone: '', store_name: '', location: '' });
-    const [googleSubmitLoading, setGoogleSubmitLoading] = useState(false);
-
-    const handleGoogleDetailsSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setGoogleSubmitLoading(true);
-        try {
-            await googleLogin(googleCreds, googleForm);
-        } catch (err) {
-            setError(err.response?.data?.error || 'Failed to submit registration');
-            if (err.response?.status === 403) {
-                setShowGoogleDetailsModal(false);
-                setFpMsg(err.response?.data?.error || 'Registration submitted! Pending admin approval.');
-            }
-        } finally {
-            setGoogleSubmitLoading(false);
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -76,7 +51,6 @@ const Login = () => {
         e.preventDefault();
         setFpError(''); setFpLoading(true);
         try {
-            // Just move to next step — actual verification happens on submit
             setForgotStep('newpass');
         } catch (err) {
             setFpError(err.response?.data?.error || 'Invalid OTP.');
@@ -241,72 +215,6 @@ const Login = () => {
                 </div>
             )}
 
-            {/* Google New User Details Modal */}
-            {showGoogleDetailsModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-                    <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 w-full max-w-md shadow-2xl animate-fade-in-up">
-                        <div className="text-center mb-6">
-                            <div className="w-12 h-12 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-3 text-indigo-400 font-bold text-xl">
-                                {googleUserMeta.name?.charAt(0).toUpperCase()}
-                            </div>
-                            <h3 className="text-xl font-display font-bold text-white">Complete Your Details</h3>
-                            <p className="text-sm text-slate-400 mt-1">Hello <span className="text-white font-semibold">{googleUserMeta.name}</span> ({googleUserMeta.email})! Please provide your information for Admin approval.</p>
-                        </div>
-
-                        {error && (
-                            <div className="bg-rose-500/10 border border-rose-500/30 text-rose-400 p-3 rounded-xl mb-4 text-sm font-semibold">
-                                {error}
-                            </div>
-                        )}
-
-                        <form onSubmit={handleGoogleDetailsSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Phone Number *</label>
-                                <input
-                                    type="text" required
-                                    value={googleForm.phone} onChange={e => setGoogleForm({...googleForm, phone: e.target.value})}
-                                    placeholder="Enter 10-digit phone number"
-                                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 outline-none text-sm"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Store Name *</label>
-                                <input
-                                    type="text" required
-                                    value={googleForm.store_name} onChange={e => setGoogleForm({...googleForm, store_name: e.target.value})}
-                                    placeholder="Enter Store / Business Name"
-                                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 outline-none text-sm"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Location / Address *</label>
-                                <input
-                                    type="text" required
-                                    value={googleForm.location} onChange={e => setGoogleForm({...googleForm, location: e.target.value})}
-                                    placeholder="Enter City / Location"
-                                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-indigo-500/50 outline-none text-sm"
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                disabled={googleSubmitLoading}
-                                className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-bold py-3 rounded-xl mt-2 shadow-lg transition-all disabled:opacity-50"
-                            >
-                                {googleSubmitLoading ? 'Submitting...' : 'Submit for Approval'}
-                            </button>
-                        </form>
-
-                        <button
-                            type="button"
-                            onClick={() => { setShowGoogleDetailsModal(false); setError(''); }}
-                            className="w-full mt-3 text-xs text-slate-500 hover:text-slate-300 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            )}
-
             {/* Login Form */}
             <div className="bg-slate-800/90 backdrop-blur-xl border border-slate-700/50 p-10 max-w-md w-full rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.2)] animate-fade-in-up relative">
                 <div className="text-center mb-10">
@@ -354,35 +262,6 @@ const Login = () => {
                         Sign In
                     </button>
                 </form>
-
-                <div className="relative my-6 text-center">
-                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-700"></div></div>
-                    <span className="relative bg-slate-800/90 px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Or continue with</span>
-                </div>
-
-                <div className="flex justify-center">
-                    <GoogleLogin
-                        onSuccess={async (credentialResponse) => {
-                            try {
-                                setError('');
-                                const res = await googleLogin(credentialResponse);
-                                if (res && res.isNewUser) {
-                                    setGoogleCreds(credentialResponse);
-                                    setGoogleUserMeta({ name: res.name, email: res.email });
-                                    setShowGoogleDetailsModal(true);
-                                }
-                            } catch (err) {
-                                setError(err.response?.data?.error || 'Google login failed');
-                            }
-                        }}
-                        onError={() => {
-                            setError('Google login failed. Please try again.');
-                        }}
-                        theme="filled_blue"
-                        shape="pill"
-                        size="large"
-                    />
-                </div>
 
                 <div className="mt-8 text-center text-sm font-medium text-slate-400">
                     Don't have an account? <Link to="/register" className="text-white hover:text-indigo-400 transition-colors ml-1">Create one</Link>
